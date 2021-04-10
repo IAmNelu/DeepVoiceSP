@@ -1,0 +1,19 @@
+{
+    "TRAIN_PATH":"../TIMIT/TRAIN/",
+    "TEST_PATH": "../TIMIT/TEST/",
+    "FOLDING_DICT": "foldings61-48.json",
+    
+    "NUM_CLASSES":39,
+    "propUPDATE_PHONEMES": true,
+    "propPROCESS_DATA": true,
+
+    "MFCC_DATA":{
+        "sampling_frequency":16000,
+        "order_mfcc":39,
+        "n_fft":512,
+        "hop_length":160
+    },
+    "SQ":20,
+    "BATCH_SIZE":6,
+    "EPOCHS":15
+}
