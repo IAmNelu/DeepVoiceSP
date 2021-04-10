@@ -3,6 +3,7 @@ import json
 import librosa
 import numpy as np
 import pandas as pd
+import pickle
 
 def paths_from_region(path_to_data):
   regions = os.listdir(path_to_data)

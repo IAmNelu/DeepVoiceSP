@@ -2,10 +2,14 @@
     "TRAIN_PATH":"../TIMIT/TRAIN/",
     "TEST_PATH": "../TIMIT/TEST/",
     "FOLDING_DICT": "foldings61-48.json",
-    
-    "NUM_CLASSES":39,
-    "propUPDATE_PHONEMES": true,
-    "propPROCESS_DATA": true,
+    "CHECKPOINT_PATH":"checkpoints/DBLSTM-{epoch:04d}.ckpt",    
+    "LOG_FILE":"training.log",
+    "NUM_CLASSES":49,
+    "propUPDATE_PHONEMES": false,
+    "propPROCESS_DATA": false,
+    "propTRAIN":false,
+    "propLOAD":true,
+    "model_to_load":"checkpoints/DBLSTM-0000.ckpt",
 
     "MFCC_DATA":{
         "sampling_frequency":16000,
@@ -15,5 +19,7 @@
     },
     "SQ":20,
     "BATCH_SIZE":6,
-    "EPOCHS":15
+    "EPOCHS":15,
+    "HIDDEN_UNITS":128
+    
 }
