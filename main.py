@@ -102,12 +102,13 @@ if __name__ == "__main__":
   train_dataset = DataSet(np.array(Xp_tr, dtype=object), np.array(label_tr, dtype=object), BATCH_SIZE)    
   test_dataset = DataSet(np.array(Xp_ts, dtype=object), np.array(label_ts, dtype=object), BATCH_SIZE)
 
+  print("Model Crearion")
   model = net.DBLSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
               hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=0.3, num_epochs=11, log=log_file_path,
-               LR=0.01, ch_paht=CHECKPOINT_PATH)
+               LR=0.01, ch_path=CHECKPOINT_PATH)
   
   if config_run["propLOAD"]:
     model.load_weights(CHECKPOINT_PATH.format(epoch=0))
-
+  print("Start Training")
   if config_run["propTRAIN"]:
     model.train_model(train_dataset, test_dataset)

@@ -39,13 +39,14 @@ def reset_states(model, layers, eos):
 class DBLSTM:
   def __init__(self, batch_size, sequence_length, n_mffc, hidden_units, 
                out_classes, dropout=0.3, num_epochs=10, log="train.log",
-               LR=0.01, ch_paht=None):
+               LR=0.01, ch_path=None):
     self.LR = LR
     self.loss_fn = CategoricalCrossentropy(from_logits=True)
     self.optimizer = Adam(LR)
     self.epochs = num_epochs
     self.sentence_length = sequence_length
     self.batch_size = batch_size
+    self.ch_path = ch_path
     self.layer_names = ["LSTM0","LSTM1","LSTM2", "LSTM3"]
     model = tf.keras.models.Sequential()
     model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + self.layer_names[0]), name=self.layer_names[0], batch_input_shape=(batch_size, sequence_length, n_mffc)))
@@ -180,7 +181,7 @@ class DBLSTM:
       end_epoch = time.time()
       self.logs.append(f"EPOCH {epoch} COMPLETED == {time.asctime(time.localtime())}==\n")
       time_ellapsed  = (end_epoch - start_epoch_time)
-      self.model.save_weights(self.ch_paht.format(epoch=epoch))
+      self.model.save_weights(self.ch_path.format(epoch=epoch))
       self.logs.append(f"== TIME TRAINING EPOCH {time_ellapsed} seconds ==\n")
       _, _ , acc = self.evaluate_model(test_dataset)
       self.logs.append(f"== ACCURACY ON TEST-SET {acc * 100:.2f}% ==\n")
