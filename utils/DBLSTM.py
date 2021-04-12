@@ -1,9 +1,11 @@
 import tensorflow as tf
 import time
 import numpy as np
+from sklearn.metrics import confusion_matrix
 from tensorflow.keras.layers import Bidirectional, Dense, Activation, LSTM, Dropout
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.optimizers import RMSprop, Adam
+
 
 def get_data_array(dataset, sequence_length=20):
   X_train = []
@@ -20,6 +22,7 @@ def get_data_array(dataset, sequence_length=20):
   y_train = np.array(y_train)
   eoses = np.array(eoses)
   return X_train, y_train, eoses
+  
 def reset_layer(layer, eos): #resets inner states
   for i in range(len(layer.states)):
     current_state = layer.states[i].numpy()
@@ -183,8 +186,13 @@ class DBLSTM:
       time_ellapsed  = (end_epoch - start_epoch_time)
       self.model.save_weights(self.ch_path.format(epoch=epoch))
       self.logs.append(f"== TIME TRAINING EPOCH {time_ellapsed} seconds ==\n")
-      _, _ , acc = self.evaluate_model(test_dataset)
+      predicted, ground_truth , acc = self.evaluate_model(test_dataset)
+      cf_np = confusion_matrix(ground_truth, predicted, labels=range(0,49))
+      cf_lst = [r + "\n" for r in in cf_np]
       self.logs.append(f"== ACCURACY ON TEST-SET {acc * 100:.2f}% ==\n")
+      self.logs.append("=== CONFUSION MATRIX ===")
+      self.logs += cf_lst
+      self.logs.append("=== CONFUSION MATRIX FINISH ===")
       self.print_log()
 
     end_training = time.time()

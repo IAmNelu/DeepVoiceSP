@@ -28,6 +28,8 @@ def set_global_variables(file_name):
   global BATCH_SIZE
   global EPOCHS
   global HIDDEN_UNITS
+  global LR
+  global DropOut
   PATH_TO_TRAIN = _dict["TRAIN_PATH"]
   PATH_TO_TEST = _dict["TEST_PATH"]
   PATH_FOLDING = _dict["FOLDING_DICT"]
@@ -43,6 +45,8 @@ def set_global_variables(file_name):
   BATCH_SIZE = _dict["BATCH_SIZE"]
   EPOCHS = _dict["EPOCHS"]
   HIDDEN_UNITS = _dict["HIDDEN_UNITS"]
+  LR = _dict["LR"]
+  DropOut = _dict["DROPOUT"] 
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Process some integers.')
@@ -104,8 +108,8 @@ if __name__ == "__main__":
 
   print("Model Crearion")
   model = net.DBLSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
-              hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=0.3, num_epochs=11, log=log_file_path,
-               LR=0.01, ch_path=CHECKPOINT_PATH)
+              hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
+               LR=LR, ch_path=CHECKPOINT_PATH)
   
   if config_run["propLOAD"]:
     model.load_weights(CHECKPOINT_PATH.format(epoch=0))
