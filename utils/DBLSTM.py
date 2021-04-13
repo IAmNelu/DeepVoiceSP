@@ -188,7 +188,7 @@ class DBLSTM:
       self.logs.append(f"== TIME TRAINING EPOCH {time_ellapsed} seconds ==\n")
       predicted, ground_truth , acc = self.evaluate_model(test_dataset)
       cf_np = confusion_matrix(ground_truth, predicted, labels=range(0,49))
-      cf_lst = [r + "\n" for r in cf_np]
+      cf_lst = [str(r) + "\n" for r in cf_np]
       self.logs.append(f"== ACCURACY ON TEST-SET {acc * 100:.2f}% ==\n")
       self.logs.append("=== CONFUSION MATRIX ===")
       self.logs += cf_lst
