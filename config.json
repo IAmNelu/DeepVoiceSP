@@ -1,6 +1,6 @@
 {
-  "TRAIN_PATH": "/homes/ifrim/Documents/datasets/TIMIT/TRAIN/",
-  "TEST_PATH": "/homes/ifrim/Documents/datasets/TIMIT/TEST/",
+  "TRAIN_PATH": "/home/semesterproject/datasets/TIMIT/TRAIN/",
+  "TEST_PATH": "/home/semesterproject/datasets/TIMIT/TEST/",
   "FOLDING_DICT": "foldings61-48.json",
   "CHECKPOINT_PATH": "/tmp/ifrim_checkpoints/DBLSTM-{epoch:04d}.ckpt",
   "LOG_FILE": "/tmp/ifrim_training.log",
@@ -12,14 +12,14 @@
   "model_to_load": "checkpoints/DBLSTM-0000.ckpt",
   "MFCC_DATA": {
     "sampling_frequency": 16000,
-    "order_mfcc": 39,
+    "order_mfcc": 13,
     "n_fft": 512,
     "hop_length": 160
   },
   "SQ": 20,
   "BATCH_SIZE": 6,
-  "EPOCHS": 40,
+  "EPOCHS": 10,
   "HIDDEN_UNITS": 512,
   "LR": 0.02,
-  "DROPOUT": 0.5
+  "DROPOUT": 0.8
 }

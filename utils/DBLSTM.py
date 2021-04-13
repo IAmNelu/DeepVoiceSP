@@ -62,7 +62,8 @@ class DBLSTM:
     model.add(Dropout(dropout))
     model.add(Dense(out_classes))
     model.add(Dropout(dropout))
-    model.add(Activation('softmax')) 
+    model.add(Activation('softmax'))
+    self.out_classes = out_classes 
     self.model  = model
     self.logs = []
     self.log_path = log
@@ -187,7 +188,8 @@ class DBLSTM:
       self.model.save_weights(self.ch_path.format(epoch=epoch))
       self.logs.append(f"== TIME TRAINING EPOCH {time_ellapsed} seconds ==\n")
       predicted, ground_truth , acc = self.evaluate_model(test_dataset)
-      cf_np = confusion_matrix(ground_truth, predicted, labels=range(0,49))
+     
+      cf_np = confusion_matrix(ground_truth, predicted, labels=range(0,self.out_classes))
       cf_lst = [str(r) + "\n" for r in cf_np]
       self.logs.append(f"== ACCURACY ON TEST-SET {acc * 100:.2f}% ==\n")
       self.logs.append("=== CONFUSION MATRIX ===")
