@@ -1,5 +1,17 @@
 import numpy as np
 
+def remove_silence(X, cl=29, padd=1):
+  slim = {}
+  for key, v in X.items():
+    x = v['mfcc']
+    y = v['y']
+    mask = np.argmax(y, axis=1) != cl
+    init = np.argmax(mask) - padd
+    inv_max = mask[::-1]
+    end = len(mask) - np.argmax(mask) - 1 + padd
+    slim[key] = {'mfcc':x[init:end+1], 'y':y[init:end+1]} 
+  return slim
+
 
 def pad_last(sentence, target_length):
   """
