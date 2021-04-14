@@ -9,6 +9,7 @@
   "propPROCESS_DATA": true,
   "propTRAIN": true,
   "propLOAD": false,
+  "propRMSilencePostLoad": true,
   "model_to_load": "checkpoints/DBLSTM-0000.ckpt",
   "MFCC_DATA": {
     "sampling_frequency": 16000,

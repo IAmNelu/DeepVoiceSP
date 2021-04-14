@@ -40,6 +40,7 @@ def set_global_variables(file_name):
   config_run["process_phonemes"] = _dict["propUPDATE_PHONEMES"]
   config_run["propTRAIN"] = _dict["propTRAIN"]
   config_run["propLOAD"] = _dict["propLOAD"]
+  config_run["propRMSilencePostLoad"] = _dict['propRMSilencePostLoad']
   config_mfcc = _dict["MFCC_DATA"]
   SQ = _dict["SQ"]
   BATCH_SIZE = _dict["BATCH_SIZE"]
@@ -100,6 +101,10 @@ if __name__ == "__main__":
     train_data = dp.load_dict("train_data.pickle")
     test_data = dp.load_dict("test_data.pickle")
 
+  if config_run["propRMSilencePostLoad"]:
+    sil_num = phonemes_dict_inv['sil']
+    train_data =  pf.remove_silence(train_data, sil_num)
+    test_data = pf.remove_silence(test_data, sil_num)
   Xp_tr, label_tr = pf.pad_data(train_data, seq_length=SQ)
   Xp_ts, label_ts = pf.pad_data(test_data, seq_length=SQ)
 
