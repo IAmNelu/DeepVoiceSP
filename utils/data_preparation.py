@@ -159,7 +159,7 @@ def match_data(sentence_entry, phonem_dict, verbose=False):
   phones, mfcc_data, d = read_phn(phoneme_file, mfcc_data, phonem_dict)
   if verbose:
     if d != 0:
-      if abs(d) > 5:
+      if abs(d) > 500:
         print(f"length mismatch of {d} frames {sentence_entry[-1]}")
   return mfcc_data, phones
 

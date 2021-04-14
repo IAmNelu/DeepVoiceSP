@@ -33,7 +33,6 @@ def pad_last(sentence, target_length):
   """
   
   assert len(sentence) <= target_length, "Can't pad sentence of length %i to length %i"%(len(sentence), target_length)
-      
   last = sentence[-1]
   pad = [last for i in range(0, target_length - len(sentence))]
   
@@ -84,9 +83,12 @@ def pad_data(dictionay_data, seq_length=20):
   for speaker, data in dictionay_data.items():
     x = data['mfcc']
     y = data['y']
-    x_p = pad_to_sequence_length(x, seq_length)
-    y_p = pad_to_sequence_length(y, seq_length)
-    Xp.append(x_p)
-    labels.append(y_p)
+    if x.shape[0]==0 or y.shape[0]==0:
+      pass
+    else:
+      x_p = pad_to_sequence_length(x, seq_length)
+      y_p = pad_to_sequence_length(y, seq_length)
+      Xp.append(x_p)
+      labels.append(y_p)
 
   return Xp, labels
