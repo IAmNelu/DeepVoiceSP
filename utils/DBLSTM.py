@@ -151,7 +151,10 @@ class _LSTM:
       cf_np = confusion_matrix(ground_truth, predicted, labels=range(0,self.out_classes))
       cf_lst = [str(r) + "\n" for r in cf_np]
       print(f"== ACCURACY ON TEST-SET {acc * 100:.2f}% ==")
-      print(cf_lst)
+      mx=""
+      for s in cf_lst: 
+        mx += s
+      print(mx)
     end_training = time.time()
     print("===FINISHED TRAINING ===\n", f"N EPOCHS: {self.epochs}\n", f"LR: {self.LR}")
     print(f"=== TIME {time.asctime(time.localtime())}===")  
