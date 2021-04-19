@@ -112,7 +112,10 @@ if __name__ == "__main__":
   test_dataset = DataSet(np.array(Xp_ts, dtype=object), np.array(label_ts, dtype=object), BATCH_SIZE)
 
   print("Model Crearion")
-  model = net.DBLSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
+  # model = net.DBLSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
+  #             hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
+  #             LR=LR, ch_path=CHECKPOINT_PATH)
+  model = net._LSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
               hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
                LR=LR, ch_path=CHECKPOINT_PATH)
   
