@@ -1,16 +1,26 @@
 import numpy as np
 
-def remove_silence(X, cl=29, padd=1):
-  slim = {}
+def remove_silence(X, cl=None, padd=1):
+  snello = {}
   for key, v in X.items():
     x = v['mfcc']
     y = v['y']
-    mask = np.argmax(y, axis=1) != cl
-    init = np.argmax(mask) - padd
-    inv_max = mask[::-1]
-    end = len(mask) - np.argmax(mask) - 1 + padd
-    slim[key] = {'mfcc':x[init:end+1], 'y':y[init:end+1]} 
-  return slim
+    if len(x) != len(y):
+      print("MIS MATCH X-Y")
+    classes = np.argmax(y, axis=1) #go from one hot to index encoding
+    for i, c in enumerate(classes):
+      if c != cl:
+        init = i
+        break
+    for i, c in enumerate(classes[::-1]):
+      if c != cl:
+        end = len(classes) - i - 1
+        break
+    init -= padd # add silence equal to the number of padding requested 
+    end += padd # add silence equal to the number of padding requested 
+    # print(f"{init}-{end}")
+    snello[key] = {'mfcc':x[init:end+1], 'y':y[init:end+1]} 
+  return snello
 
 
 def pad_last(sentence, target_length):
