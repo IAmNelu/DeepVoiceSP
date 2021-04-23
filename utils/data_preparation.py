@@ -147,8 +147,8 @@ def read_phn(f, temp_mfcc, phonem_dict, phoneme_wise=False):
         start = int(s/160.0)
         end = int(e/160.0)
         if phoneme_wise:
-            one_hot = np.zeros(len(ALL_PHONEMES))
-            one_hot[ALL_PHONEMES.index(phone)] = 1
+            one_hot = np.zeros(len(set(phonem_dict.values())))
+            one_hot[phonem_dict[phone]] = 1
             phones_list.append(one_hot)
             mfcc_block_list.append(
                 temp_mfcc[:, start: min(end, temp_mfcc.shape[1])])

@@ -31,6 +31,7 @@ def set_global_variables(file_name):
     global HIDDEN_UNITS
     global LR
     global DropOut
+    global PHONEME_WISE
     PATH_TO_TRAIN = _dict["TRAIN_PATH"]
     PATH_TO_TEST = _dict["TEST_PATH"]
     PATH_FOLDING = _dict["FOLDING_DICT"]
@@ -49,8 +50,6 @@ def set_global_variables(file_name):
     HIDDEN_UNITS = _dict["HIDDEN_UNITS"]
     LR = _dict["LR"]
     DropOut = _dict["DROPOUT"]
-
-    global PHONEME_WISE
     PHONEME_WISE = _dict["PHONEME_WISE"]
 
 
