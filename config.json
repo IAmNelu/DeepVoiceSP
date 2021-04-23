@@ -18,9 +18,10 @@
     "hop_length": 160
   },
   "SQ": 20,
-  "BATCH_SIZE": 6,
-  "EPOCHS": 10,
+  "BATCH_SIZE": 12,
+  "EPOCHS": 50,
   "HIDDEN_UNITS": 512,
-  "LR": 0.02,
-  "DROPOUT": 0.8
+  "LR": 0.00005,
+  "DROPOUT": 0.7,
+  "PHONEME_WISE": false
 }
