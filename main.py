@@ -61,6 +61,9 @@ if __name__ == "__main__":
     config_file = args.config_file[0]
     set_global_variables(config_file)
 
+    dictpath = "label_dict_"+str(NUM_CLASSES)+".json'"
+    inverse_dictpath = "label_inv_dict_"+str(NUM_CLASSES)+".json'"
+
     if config_run["process_data"]:  # process files
         # Load all paths
         train_paths = dp.paths_from_region(PATH_TO_TRAIN)
@@ -88,12 +91,12 @@ if __name__ == "__main__":
             phonemes_dict = {i: phn for i, phn in enumerate(list(set_phns))}
             phonemes_dict_inv = {v: k for k, v in phonemes_dict.items()}
 
-            dp.save_json_dict(phonemes_dict, 'label_dict.json')
-            dp.save_json_dict(phonemes_dict_inv, 'label_inv_dict.json')
+            dp.save_json_dict(phonemes_dict, dictpath)
+            dp.save_json_dict(phonemes_dict_inv, inverse_dictpath)
 
         else:  # load phonemes
-            phonemes_dict = dp.load_json_dict('label_dict.json')
-            phonemes_dict_inv = dp.load_json_dict('label_inv_dict.json')
+            phonemes_dict = dp.load_json_dict(dictpath)
+            phonemes_dict_inv = dp.load_json_dict(inverse_dictpath)
 
         train_data = dp.pair_data(
             train_dict_x, phonemes_dict_inv, PHONEME_WISE)
@@ -103,8 +106,8 @@ if __name__ == "__main__":
         dp.save_dict(test_data, 'test_data.pickle')
 
     else:  # load pickles
-        phonemes_dict = dp.load_json_dict('label_dict.json')
-        phonemes_dict_inv = dp.load_json_dict('label_inv_dict.json')
+        phonemes_dict = dp.load_json_dict(dictpath)
+        phonemes_dict_inv = dp.load_json_dict(inverse_dictpath)
         train_data = dp.load_dict("train_data.pickle")
         test_data = dp.load_dict("test_data.pickle")
 
