@@ -1,12 +1,12 @@
-import padding_functions as pf
-import DBLSTM as net
-import numpy as np
-from Dataset import DataSet
-import data_preparation as dp
 import argparse
 import sys
-import json
-sys.path.insert(0, './utils')
+import json 
+sys.path.insert(0,'./utils')
+import data_preparation as dp
+import padding_functions as pf 
+from Dataset import DataSet
+import numpy as np
+import DBLSTM as net
 
 
 config_file = "config.json"
