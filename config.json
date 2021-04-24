@@ -19,9 +19,9 @@
   },
   "SQ": 20,
   "BATCH_SIZE": 12,
-  "EPOCHS": 50,
+  "EPOCHS": 100,
   "HIDDEN_UNITS": 512,
-  "LR": 0.00005,
+  "LR": 0.00008,
   "DROPOUT": 0.7,
   "PHONEME_WISE": false
 }

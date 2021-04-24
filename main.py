@@ -61,8 +61,8 @@ if __name__ == "__main__":
     config_file = args.config_file[0]
     set_global_variables(config_file)
 
-    dictpath = "label_dict_"+str(NUM_CLASSES)+".json'"
-    inverse_dictpath = "label_inv_dict_"+str(NUM_CLASSES)+".json'"
+    dictpath = "label_dict_"+str(NUM_CLASSES)+".json"
+    inverse_dictpath = "label_inv_dict_"+str(NUM_CLASSES)+".json"
 
     if config_run["process_data"]:  # process files
         # Load all paths
@@ -74,10 +74,10 @@ if __name__ == "__main__":
         # Compute MFCCs
         train_dict_x = dp.compute_mfcc(train_paths, config_mfcc)
         print(
-            f"###  All data loded: {len(train_paths) == len(train_dict_x.keys())} ###")
+            f"###  All data loaded: {len(train_paths) == len(train_dict_x.keys())} ###")
         test_dict_x = dp.compute_mfcc(test_paths, config_mfcc)
         print(
-            f"###  All data loded: {len(test_paths) == len(test_dict_x.keys())} ###")
+            f"###  All data loaded: {len(test_paths) == len(test_dict_x.keys())} ###")
 
         if config_run["process_phonemes"]:  # substitute phonemes
             # load phonemes dictionary
@@ -122,14 +122,13 @@ if __name__ == "__main__":
         label_tr, dtype=object), BATCH_SIZE)
     test_dataset = DataSet(np.array(Xp_ts, dtype=object),
                            np.array(label_ts, dtype=object), BATCH_SIZE)
-
-    print("Model Crearion")
-    # model = net.DBLSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
-    #             hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
-    #             LR=LR, ch_path=CHECKPOINT_PATH)
-    model = net._LSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
-                      hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
-                      LR=LR, ch_path=CHECKPOINT_PATH)
+    print("Model Creation")
+    model = net.DBLSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
+                 hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
+                 LR=LR, ch_path=CHECKPOINT_PATH)
+    #model = net._LSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
+    #                  hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
+    #                  LR=LR, ch_path=CHECKPOINT_PATH)
 
     if config_run["propLOAD"]:
         model.load_weights(CHECKPOINT_PATH.format(epoch=0))

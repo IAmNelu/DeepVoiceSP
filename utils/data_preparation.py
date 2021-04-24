@@ -133,16 +133,16 @@ def read_phn(f, temp_mfcc, phonem_dict, phoneme_wise=False):
             # An array of class labels for every 10 ms in the phone data
             # phones[2] is the phoneme annotated from 20-30 ms
             phones = np.zeros(
-                (len(phonem_dict.keys()), phn_len_mill), dtype=int)
+                (len(set(phonem_dict.values())), phn_len_mill), dtype=int)
             # Make sure the length of mfcc_data and phn_len_mill are equal
             mfcc_data = temp_mfcc[:, 0:phn_len_mill]
         else:
-            phones = np.zeros((len(phonem_dict.keys()), temp_mfcc.shape[1]))
+            phones = np.zeros((set(len(phonem_dict.values())), temp_mfcc.shape[1]))
             mfcc_data = temp_mfcc
 
     d = phn_len_mill - temp_mfcc.shape[1]
 
-    # Convert the string phonemes to class labels
+ # Convert the string phonemes to class labels
     for i, (s, e, phone) in enumerate(temp_phones.iloc):
         start = int(s/160.0)
         end = int(e/160.0)
