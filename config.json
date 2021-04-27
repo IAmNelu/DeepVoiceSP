@@ -21,7 +21,7 @@
   "BATCH_SIZE": 12,
   "EPOCHS": 100,
   "HIDDEN_UNITS": 512,
-  "LR": 0.00008,
+  "LR": 0.0001,
   "DROPOUT": 0.7,
   "PHONEME_WISE": false
 }

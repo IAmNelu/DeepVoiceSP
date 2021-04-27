@@ -5,6 +5,7 @@ from sklearn.metrics import confusion_matrix
 from tensorflow.keras.layers import Bidirectional, Dense, Activation, LSTM, Dropout
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.optimizers import RMSprop, Adam
+from tensorflow.keras.optimizers.schedules import ExponentialDecay
 
 
 def get_data_array(dataset, sequence_length=20):
@@ -170,10 +171,13 @@ class _LSTM:
 class DBLSTM:
   def __init__(self, batch_size, sequence_length, n_mffc, hidden_units, 
                out_classes, dropout=0.3, num_epochs=10, log="train.log",
-               LR=0.01, ch_path=None):
+               LR=0.01, decay_rate=0.97, decay_steps=5, ch_path=None):
+    self.initial_learning_rate = LR
+    self.decay_rate = decay_rate
+    self.decay_steps = decay_steps
     self.LR = LR
     self.loss_fn = CategoricalCrossentropy(from_logits=True)
-    self.optimizer = Adam(LR)
+    self.optimizer = Adam(self.LR)
     self.epochs = num_epochs
     self.sentence_length = sequence_length
     self.batch_size = batch_size
@@ -195,6 +199,9 @@ class DBLSTM:
     self.model  = model
     self.logs = []
     self.log_path = log
+ 
+  def decayed_learning_rate(self, step):
+    return self.initial_learning_rate * self.decay_rate**(step / self.decay_steps)
 
   def print_log(self):
     if len(self.logs) == 0:
@@ -304,12 +311,16 @@ class DBLSTM:
         
         grads = tape.gradient(loss_value, self.model.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
-        
+      
         if i % 400 == 0:
           self.logs.append(f"TRAINING LOSS (for one batch) at step {i}/{len(X)}:{float(self.losses[-1]):.4f}\n")
           self.logs.append(f"Seen so far: {((global_step + 1) * self.batch_size)} samples\n")
           self.print_log()
-    
+
+      self.LR = self.decayed_learning_rate(epoch)
+      # print(self.LR)
+      self.logs.append(f"NEW LR: {self.LR}=======\n")
+
       end_epoch = time.time()
       self.logs.append(f"EPOCH {epoch} COMPLETED == {time.asctime(time.localtime())}==\n")
       time_ellapsed  = (end_epoch - start_epoch_time)
