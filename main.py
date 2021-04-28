@@ -32,6 +32,8 @@ def set_global_variables(file_name):
     global LR
     global DropOut
     global PHONEME_WISE
+    global DECAY_RATE
+    global DECAY_STEPS
     PATH_TO_TRAIN = _dict["TRAIN_PATH"]
     PATH_TO_TEST = _dict["TEST_PATH"]
     PATH_FOLDING = _dict["FOLDING_DICT"]
@@ -51,6 +53,8 @@ def set_global_variables(file_name):
     LR = _dict["LR"]
     DropOut = _dict["DROPOUT"]
     PHONEME_WISE = _dict["PHONEME_WISE"]
+    DECAY_RATE = _dict["DECAY_RATE"]
+    DECAY_STEPS = _dict["DECAY_STEPS"]
 
 
 if __name__ == "__main__":
@@ -125,7 +129,7 @@ if __name__ == "__main__":
     print("Model Creation")
     model = net.DBLSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
                  hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
-                 LR=LR, ch_path=CHECKPOINT_PATH)
+                 LR=LR, decay_rate=DECAY_RATE, decay_steps=DECAY_STEPS, ch_path=CHECKPOINT_PATH)
     #model = net._LSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
     #                  hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
     #                  LR=LR, ch_path=CHECKPOINT_PATH)
