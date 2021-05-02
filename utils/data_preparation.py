@@ -1,6 +1,8 @@
 import os
 import json
 import librosa
+import librosa.util
+import pysptk
 import numpy as np
 import pandas as pd
 import pickle
@@ -100,7 +102,7 @@ def normalize_mfcc(mfcc):
     return (mfcc - means)/stds
 
 
-def compute_mfcc(paths, config_mfcc):
+def compute_mfcc_mceps(paths, config_mfcc):
     _data_x = {}
     for p in paths:
         x, _ = librosa.load(p + ".WAV", sr=config_mfcc["sampling_frequency"])
@@ -110,9 +112,14 @@ def compute_mfcc(paths, config_mfcc):
                                      n_fft=config_mfcc["n_fft"],
                                      hop_length=config_mfcc["hop_length"])
         mfccs = normalize_mfcc(mfccs)
+        frames = librosa.util.frame(x, frame_length=config_mfcc["n_fft"], hop_length=config_mfcc["hop_length"]).astype(np.float64).T
+        # Windowing
+        frames *= pysptk.blackman(config_mfcc["n_fft"], normalize=1)
+        mceps = pysptk.mcep(frames)#order,alpha) 
+        mceps = normalize_mfcc(mceps)
         id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
 
-        _data_x[id_] = (mfccs, p)
+        _data_x[id_] = (mfccs, mceps, p)
     return _data_x
 
 
@@ -173,7 +180,7 @@ def match_data(sentence_entry, phonem_dict, verbose=False, phoneme_wise=False):
         Tuple:
           Mfccs and label paierd
     """
-    phoneme_file = sentence_entry[1]+".PHN"
+    phoneme_file = sentence_entry[-1]+".PHN"
 
     mfcc_data = sentence_entry[0]
 
@@ -191,7 +198,7 @@ def pair_data(x_dictionay, phonem_dict, phoneme_wise=False):
     for k, v in x_dictionay.items():
         mfcc, y = match_data(v, phonem_dict, verbose=True,
                              phoneme_wise=phoneme_wise)
-        result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1]}
+        result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1], "mceps":v[1]}
     return result_dict
 
 

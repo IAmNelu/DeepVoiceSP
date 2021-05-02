@@ -76,10 +76,10 @@ if __name__ == "__main__":
         print(f"Files for test: {len(test_paths)}")
 
         # Compute MFCCs
-        train_dict_x = dp.compute_mfcc(train_paths, config_mfcc)
+        train_dict_x = dp.compute_mfcc_mceps(train_paths, config_mfcc)
         print(
             f"###  All data loaded: {len(train_paths) == len(train_dict_x.keys())} ###")
-        test_dict_x = dp.compute_mfcc(test_paths, config_mfcc)
+        test_dict_x = dp.compute_mfcc_mceps(test_paths, config_mfcc)
         print(
             f"###  All data loaded: {len(test_paths) == len(test_dict_x.keys())} ###")
 
