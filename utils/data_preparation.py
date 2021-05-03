@@ -105,21 +105,22 @@ def normalize_mfcc(mfcc):
 def compute_mfcc_mceps(paths, config_mfcc):
     _data_x = {}
     for p in paths:
-        x, _ = librosa.load(p + ".WAV", sr=config_mfcc["sampling_frequency"])
-        mfccs = librosa.feature.mfcc(y=x,
-                                     sr=config_mfcc["sampling_frequency"],
-                                     n_mfcc=config_mfcc["order_mfcc"],
-                                     n_fft=config_mfcc["n_fft"],
-                                     hop_length=config_mfcc["hop_length"])
-        mfccs = normalize_mfcc(mfccs)
-        frames = librosa.util.frame(x, frame_length=config_mfcc["n_fft"], hop_length=config_mfcc["hop_length"]).astype(np.float64).T
-        # Windowing
-        frames *= pysptk.blackman(config_mfcc["n_fft"], normalize=1)
-        mceps = pysptk.mcep(frames)#order,alpha) 
-        mceps = normalize_mfcc(mceps)
-        id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
+        if not "SA" in p:
+            x, _ = librosa.load(p + ".WAV", sr=config_mfcc["sampling_frequency"])
+            mfccs = librosa.feature.mfcc(y=x,
+                                        sr=config_mfcc["sampling_frequency"],
+                                        n_mfcc=config_mfcc["order_mfcc"],
+                                        n_fft=config_mfcc["n_fft"],
+                                        hop_length=config_mfcc["hop_length"])
+            mfccs = normalize_mfcc(mfccs)
+            frames = librosa.util.frame(x, frame_length=config_mfcc["n_fft"], hop_length=config_mfcc["hop_length"]).astype(np.float64).T
+            # Windowing
+            frames *= pysptk.blackman(config_mfcc["n_fft"], normalize=1)
+            mceps = pysptk.mcep(frames)#order,alpha) 
+            mceps = normalize_mfcc(mceps)
+            id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
 
-        _data_x[id_] = (mfccs, mceps, p)
+            _data_x[id_] = (mfccs, mceps, p)
     return _data_x
 
 
