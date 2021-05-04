@@ -5,8 +5,8 @@ def remove_silence(X, cl=None, padd=1):
   for key, v in X.items():
     x = v['mfcc']
     y = v['y']
-    mceps = v['mceps']
-    delta = x.shape[0]-mceps.shape[0]
+    # mceps = v['mceps']
+    # delta = x.shape[0]-mceps.shape[0]
     if len(x) != len(y):
       print("MIS MATCH X-Y")
     classes = np.argmax(y, axis=1) #go from one hot to index encoding
@@ -20,8 +20,10 @@ def remove_silence(X, cl=None, padd=1):
         break
     init -= padd # add silence equal to the number of padding requested 
     end += padd # add silence equal to the number of padding requested 
-    # print(f"{init}-{end}")
-    snello[key] = {'mfcc':x[init:end+1], 'y':y[init:end+1], 'mceps':mceps[init-delta:end-delta+1], 'path':v['path']} 
+    # print(f"{init}-{end}")  
+    # snello[key] = {'mfcc':x[init:end+1], 'y':y[init:end+1], 'mceps':mceps[init-delta:end-delta+1], 'path':v['path']} 
+    snello[key] = {'mfcc':x[init:end+1], 'y':y[init:end+1], 'path':v['path']} 
+  
   return snello
 
 
