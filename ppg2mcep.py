@@ -1,4 +1,5 @@
 import argparse
+from os import lseek
 import sys
 import json 
 sys.path.insert(0,'./utils')
@@ -10,16 +11,21 @@ import numpy as np
 
 config_file = "config.json"
 
-config_run = {}  # set what to run and what not to
+
 config_net = {}
+config_mfcc_mcep = {}
 
 def set_global_variables(file_name):
   with open(file_name) as json_file:
     _dict = json.load(json_file)
+    global config_net
     config_net = _dict['NETWORK_PARAMS']
-    print(config_net)
-    
-    
+    global config_mfcc_mcep
+    config_mfcc_mcep = _dict['MCEP']
+    # print(config_net['dim_ppgs'])
+    global PATH_TO_DATA
+    PATH_TO_DATA = _dict["PATH_TO_DATA_F"] # f speaker
+    # PATH_TO_DATA = _dict["PATH_TO_DATA_M"] # m speaker
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Process some integers.')
@@ -29,5 +35,9 @@ if __name__ == "__main__":
   config_file = args.config_file[0]
   set_global_variables(config_file)
 
-  # dictpath = "label_dict_"+str(NUM_CLASSES)+".json"
-  # inverse_dictpath = "label_inv_dict_"+str(NUM_CLASSES)+".json"
+  # print(config_net)
+  dictpath = "label_dict_"+str(config_net['dim_ppgs'])+".json"
+  inverse_dictpath = "label_inv_dict_"+str(config_net['dim_ppgs'])+".json"
+  
+  mfcc_mcep = dp.load_mfcc_mceps(PATH_TO_DATA, config_mfcc_mcep)
+  
