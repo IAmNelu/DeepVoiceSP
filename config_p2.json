@@ -1,4 +1,6 @@
 {
+  "PATH_TO_DATA_F": "/homes/ifrim/Documents/datasets/data_challenge/SEF1",
+  "PATH_TO_DATA_M": "/homes/ifrim/Documents/datasets/data_challenge/SEM1",
   "NETWORK_PARAMS": {
     "batch_size": 24,
     "epochs": 100,
