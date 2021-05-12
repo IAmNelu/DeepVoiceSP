@@ -1,0 +1,39 @@
+{
+  "PATH_TO_DATA_F": "/homes/ifrim/Documents/datasets/data_challenge/SEF1",
+  "PATH_TO_DATA_M": "/homes/ifrim/Documents/datasets/data_challenge/SEM1",
+  "NETWORK_PARAMS": {
+    "batch_size": 24,
+    "epochs": 100,
+    "dropout": 0.3,
+    "hidden_units": 512,
+    "dim_ppgs": 40,
+    "dim_mceps": 31,
+    "lr": 0.0001,
+    "lr_decay": 0.97,
+    "decay_steps": 5,
+    "optim": "adam",
+    "preload": false,
+    "validation_stop": true,
+    "validation_stop_value": 0.01,
+    "preload_path": "",
+    "check_points": "/tmp/ifrim_pt2_checkpoints/ppg2mcep-{epoch:04d}.ckpt",
+    "final_checkpoint": "../checkpoints/final/ppg2mcep.ckpt",
+    "best_checkpoint": "../checkpoints/best/ppg2mcep.ckpt",
+    "log_path": "/tmp/2log/"
+  },
+  "MCEP": {
+    "sampling_frequency": 24000,
+    "hop_length": 240,
+    "n_fft": 512,
+    "order_mcep": 30,
+    "order_mfcc": 13
+  },
+  "MFCC2PPG": {
+    "batch_size": 24,
+    "sequence_length": 20,
+    "n_mfcc": 13,
+    "hidden_units": 512,
+    "dim_ppgs": 40,
+    "path": "/tmp/ifrim_checkpoints/DBLSTM-0099.ckpt"
+  }
+}

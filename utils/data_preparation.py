@@ -105,21 +105,23 @@ def normalize_mfcc(mfcc):
 def compute_mfcc_mceps(paths, config_mfcc):
     _data_x = {}
     for p in paths:
-        x, _ = librosa.load(p + ".WAV", sr=config_mfcc["sampling_frequency"])
-        mfccs = librosa.feature.mfcc(y=x,
-                                     sr=config_mfcc["sampling_frequency"],
-                                     n_mfcc=config_mfcc["order_mfcc"],
-                                     n_fft=config_mfcc["n_fft"],
-                                     hop_length=config_mfcc["hop_length"])
-        mfccs = normalize_mfcc(mfccs)
-        frames = librosa.util.frame(x, frame_length=config_mfcc["n_fft"], hop_length=config_mfcc["hop_length"]).astype(np.float64).T
-        # Windowing
-        frames *= pysptk.blackman(config_mfcc["n_fft"], normalize=1)
-        mceps = pysptk.mcep(frames)#order,alpha) 
-        mceps = normalize_mfcc(mceps)
-        id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
+        if not "SA" in p:
+            x, _ = librosa.load(p + ".WAV", sr=config_mfcc["sampling_frequency"])
+            mfccs = librosa.feature.mfcc(y=x,
+                                        sr=config_mfcc["sampling_frequency"],
+                                        n_mfcc=config_mfcc["order_mfcc"],
+                                        n_fft=config_mfcc["n_fft"],
+                                        hop_length=config_mfcc["hop_length"])
+            mfccs = normalize_mfcc(mfccs)
+            # frames = librosa.util.frame(x, frame_length=config_mfcc["n_fft"], hop_length=config_mfcc["hop_length"]).astype(np.float64).T
+            # # Windowing
+            # frames *= pysptk.blackman(config_mfcc["n_fft"], normalize=1)
+            # mceps = pysptk.mcep(frames)#order,alpha) 
+            # mceps = normalize_mfcc(mceps)
+            id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
 
-        _data_x[id_] = (mfccs, mceps, p)
+            # _data_x[id_] = (mfccs, mceps, p)
+            _data_x[id_] = (mfccs, p)
     return _data_x
 
 
@@ -198,7 +200,9 @@ def pair_data(x_dictionay, phonem_dict, phoneme_wise=False):
     for k, v in x_dictionay.items():
         mfcc, y = match_data(v, phonem_dict, verbose=True,
                              phoneme_wise=phoneme_wise)
-        result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1], "mceps":v[1]}
+        # result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1], "mceps":v[1]}
+        result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1]}
+
     return result_dict
 
 
@@ -211,3 +215,35 @@ def load_dict(path):
     with open(path, 'rb') as f:
         loaded_obj = pickle.load(f)
         return loaded_obj
+
+
+def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
+  _data_x = {}
+  path_audios = os.listdir(path_to_data)
+
+  for p in path_audios:
+    x, _ = librosa.load(path_to_data + '/' + p, sr=config_mfcc_mceps["sampling_frequency"])
+    frames = librosa.util.frame(x, frame_length=config_mfcc_mceps["n_fft"], hop_length=config_mfcc_mceps["hop_length"]).astype(np.float64).T
+    # Windowing
+    frames *= pysptk.blackman(config_mfcc_mceps["n_fft"], normalize=1)
+    mceps = pysptk.mcep(frames, config_mfcc_mceps['order_mcep']) #,alpha) 
+    mceps = normalize_mfcc(mceps)
+    mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
+                                        n_mfcc=config_mfcc_mceps["order_mfcc"],
+                                        n_fft=config_mfcc_mceps["n_fft"],
+                                        hop_length=config_mfcc_mceps["hop_length"])
+    mfccs = normalize_mfcc(mfccs)
+    id_ = "_" + p
+    _data_x[id_] = (mfccs, mceps)
+  return _data_x
+  
+
+def get_ppgs_mceps(converto, mfcc_mcep):
+  X = []
+  y = []
+  for mfcc, mcep in mfcc_mcep.values():
+    ppgs = converto.predict(mfcc)
+    dif = ppgs.shape[0] - mcep.shape[0]
+    X.append(ppgs[dif:])
+    y.append(mcep)
+  return X, y
