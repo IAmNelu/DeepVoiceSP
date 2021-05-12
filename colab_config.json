@@ -1,9 +1,9 @@
 {
-  "TRAIN_PATH": "data/lisa/data/timit/raw/TIMIT/TRAIN/",
-  "TEST_PATH": "data/lisa/data/timit/raw/TIMIT/TEST/",
+  "TRAIN_PATH": "C:/Users/Ifrim/Documents/PoliTO/work_in_progress/VC/cpgg/TIMIT/data/lisa/data/timit/raw/TIMIT/TRAIN/",
+  "TEST_PATH": "C:/Users/Ifrim/Documents/PoliTO/work_in_progress/VC/cpgg/TIMIT/data/lisa/data/timit/raw/TIMIT/TEST/",
   "FOLDING_DICT": "foldings61-48.json",
-  "CHECKPOINT_PATH": "/tmp/ifrim_checkpoints/DBLSTM-{epoch:04d}.ckpt",
-  "LOG_FILE": "/tmp/ifrim_training.log",
+  "CHECKPOINT_PATH": "C:/Users/Ifrim/Documents/tmp/ifrim_checkpoints/DBLSTM-{epoch:04d}.ckpt",
+  "LOG_FILE": "ifrim_training.log",
   "NUM_CLASSES": 49,
   "propUPDATE_PHONEMES": true,
   "propPROCESS_DATA": true,
@@ -22,5 +22,8 @@
   "EPOCHS": 10,
   "HIDDEN_UNITS": 512,
   "LR": 0.02,
-  "DROPOUT": 0.8
+  "DECAY_RATE": 0.97,
+  "DECAY_STEPS": 5,
+  "DROPOUT": 0.8,
+  "PHONEME_WISE": false
 }
