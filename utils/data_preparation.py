@@ -236,3 +236,14 @@ def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
     id_ = "_" + p
     _data_x[id_] = (mfccs, mceps)
   return _data_x
+  
+
+def get_ppgs_mceps(converto, mfcc_mcep):
+  X = []
+  y = []
+  for mfcc, mcep in mfcc_mcep.values():
+    ppgs = converto.predict(mfcc)
+    dif = ppgs.shape[0] - mcep.shape[0]
+    X.append(ppgs[dif:])
+    y.append(mcep)
+  return X, y
