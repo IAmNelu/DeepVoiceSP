@@ -3,8 +3,8 @@
   "PATH_TO_DATA_M": "/homes/ifrim/Documents/datasets/data_challenge/SEM1",
   "NETWORK_PARAMS": {
     "batch_size": 24,
-    "epochs": 10,
-    "dropout": 0.3,
+    "epochs": 100,
+    "dropout": 0.5,
     "hidden_units": 512,
     "dim_ppgs": 40,
     "dim_mceps": 31,
