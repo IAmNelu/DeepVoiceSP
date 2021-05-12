@@ -90,7 +90,7 @@ class DBLSTM:
       "log": log_path
     }
     self.optimizer = Adam(lr=self.initial_lr)
-    self.loss = MSE
+    self.loss_fn = MSE
     self.model = get_model(hidden_units, batch_size, dim_ppgs, dim_mceps, dropout)
 
 
@@ -115,6 +115,7 @@ class DBLSTM:
       
       X, y = shuffle_batches(X_train_btc, y_train_btc)
       batch = 0
+      last_loss = None
       for i in range(len(X)):
         global_step += 1
         batch += 1
@@ -128,13 +129,14 @@ class DBLSTM:
         train_loss(loss_value)
         with train_summary_writer.as_default():
           tf.summary.scalar('loss', train_loss.result(), step=global_step-1)
+        last_loss = train_loss.result()
         train_loss.reset_states()
       eval_loss = self.evaluate_model(X_test, y_test)
       test_loss(eval_loss)
       with test_summary_writer.as_default():
         tf.summary.scalar('loss', test_loss.result(), step=epoch)
       template = 'Epoch {}, Loss: {}, Test Loss: {}'
-      print(template.format(epoch+1, train_loss.result(), test_loss.result()))
+      print(template.format(epoch+1, last_loss, test_loss.result()))
       train_loss.reset_states()
       test_loss.reset_states()
       

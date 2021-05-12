@@ -66,7 +66,7 @@ if __name__ == "__main__":
                           checkpoint_path=config_net["check_points"], best_checkpoint_path=config_net["best_checkpoint"], 
                           last_checkpoint_path=config_net["final_checkpoint"], log_path=config_net["log_path"])
   # train network
-  
+  net2.train_model(X, labels)
     # split train test
     # sort and padd
     # train
