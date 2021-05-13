@@ -18,46 +18,26 @@ def set_global_variables(file_name):
     with open(file_name) as json_file:
         _dict = json.load(json_file)
     global PATH_TO_TRAIN
-    global PATH_TO_TEST
-    global PATH_FOLDING
-    global CHECKPOINT_PATH
-    global NUM_CLASSES
-    global log_file_path
-    global config_run
-    global config_mfcc
-    global SQ
-    global BATCH_SIZE
-    global EPOCHS
-    global HIDDEN_UNITS
-    global LR
-    global DropOut
-    global PHONEME_WISE
-    global DECAY_RATE
-    global DECAY_STEPS
     PATH_TO_TRAIN = _dict["TRAIN_PATH"]
+    global PATH_TO_TEST
     PATH_TO_TEST = _dict["TEST_PATH"]
+    global PATH_FOLDING
     PATH_FOLDING = _dict["FOLDING_DICT"]
-    CHECKPOINT_PATH = _dict["CHECKPOINT_PATH"]
-    log_file_path = _dict["LOG_FILE"]
-    NUM_CLASSES = _dict["NUM_CLASSES"]
-    config_run["process_data"] = _dict["propPROCESS_DATA"]
-    config_run["process_phonemes"] = _dict["propUPDATE_PHONEMES"]
-    config_run["propTRAIN"] = _dict["propTRAIN"]
-    config_run["propLOAD"] = _dict["propLOAD"]
-    config_run["propRMSilencePostLoad"] = _dict['propRMSilencePostLoad']
+    global config_net
+    config_net = _dict["NETWORK_PARAM"]
+    global config_run
+    config_run = _dict["CONFIG_RUN"]
+    global config_mfcc
     config_mfcc = _dict["MFCC_DATA"]
-    SQ = _dict["SQ"]
-    BATCH_SIZE = _dict["BATCH_SIZE"]
-    EPOCHS = _dict["EPOCHS"]
-    HIDDEN_UNITS = _dict["HIDDEN_UNITS"]
-    LR = _dict["LR"]
-    DropOut = _dict["DROPOUT"]
+    global PHONEME_WISE
     PHONEME_WISE = _dict["PHONEME_WISE"]
-    DECAY_RATE = _dict["DECAY_RATE"]
-    DECAY_STEPS = _dict["DECAY_STEPS"]
-
+    global CHECKPOINT_PATH
+    CHECKPOINT_PATH = _dict["CHECKPOINT_PATH"]
+    global padding_silence
+    padding_silence = _dict["PADDING_SIL"]
 
 if __name__ == "__main__":
+    #parse config file and set var
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('config_file', type=str, nargs=1,
                         help='File with training Configuration')
@@ -65,8 +45,8 @@ if __name__ == "__main__":
     config_file = args.config_file[0]
     set_global_variables(config_file)
 
-    dictpath = "label_dict_"+str(NUM_CLASSES)+".json"
-    inverse_dictpath = "label_inv_dict_"+str(NUM_CLASSES)+".json"
+    dictpath = "label_dict_"+str(config_net["num_phoneme_classes"])+".json"
+    inverse_dictpath = "label_inv_dict_"+str(config_net["num_phoneme_classes"])+".json"
 
     if config_run["process_data"]:  # process files
         # Load all paths
@@ -76,14 +56,14 @@ if __name__ == "__main__":
         print(f"Files for test: {len(test_paths)}")
 
         # Compute MFCCs
-        train_dict_x = dp.compute_mfcc_mceps(train_paths, config_mfcc)
+        train_dict_x = dp.compute_mfcc(train_paths, config_mfcc)
         print(
             f"###  All data loaded: {len(train_paths) == len(train_dict_x.keys())} ###")
-        test_dict_x = dp.compute_mfcc_mceps(test_paths, config_mfcc)
+        test_dict_x = dp.compute_mfcc(test_paths, config_mfcc)
         print(
             f"###  All data loaded: {len(test_paths) == len(test_dict_x.keys())} ###")
 
-        if config_run["process_phonemes"]:  # substitute phonemes
+        if config_run["process_phonemes"]:  # substitute phonemes using the dictionary chosen
             # load phonemes dictionary
             dict_f = dp.load_json_dict(PATH_FOLDING)
             set_phns = set()
@@ -92,16 +72,19 @@ if __name__ == "__main__":
                 dp.substitute_phonemes(phn_file, foldings=dict_f)
                 setphn = dp.get_phonemes(phn_file)
                 set_phns = set_phns.union(setphn)
+            #create phoneme direct/inverse dictionary 
             phonemes_dict = {i: phn for i, phn in enumerate(list(set_phns))}
             phonemes_dict_inv = {v: k for k, v in phonemes_dict.items()}
 
+            #save phoneme dictionaries
             dp.save_json_dict(phonemes_dict, dictpath)
             dp.save_json_dict(phonemes_dict_inv, inverse_dictpath)
 
-        else:  # load phonemes
+        else:  #don't process files, just load phoneme dictionaries
             phonemes_dict = dp.load_json_dict(dictpath)
             phonemes_dict_inv = dp.load_json_dict(inverse_dictpath)
 
+        #pair mfcc frame to label
         train_data = dp.pair_data(
             train_dict_x, phonemes_dict_inv, PHONEME_WISE)
         dp.save_dict(train_data, 'train_data.pickle')
@@ -109,27 +92,29 @@ if __name__ == "__main__":
         test_data = dp.pair_data(test_dict_x, phonemes_dict_inv, PHONEME_WISE)
         dp.save_dict(test_data, 'test_data.pickle')
 
-    else:  # load pickles
+    else:  # no process, just load pickles
         phonemes_dict = dp.load_json_dict(dictpath)
         phonemes_dict_inv = dp.load_json_dict(inverse_dictpath)
         train_data = dp.load_dict("train_data.pickle")
         test_data = dp.load_dict("test_data.pickle")
 
     if config_run["propRMSilencePostLoad"]:
+        #remove strting and ending silence
         sil_num = phonemes_dict_inv['sil']
-        train_data = pf.remove_silence(train_data, sil_num)
-        test_data = pf.remove_silence(test_data, sil_num)
-    Xp_tr, label_tr = pf.pad_data(train_data, seq_length=SQ)
-    Xp_ts, label_ts = pf.pad_data(test_data, seq_length=SQ)
+        train_data = pf.remove_silence(train_data, sil_num, padding_silence)
+        test_data = pf.remove_silence(test_data, sil_num,padding_silence)
+    Xp_tr, label_tr = pf.pad_data(train_data, seq_length=config_net["sq"])
+    Xp_ts, label_ts = pf.pad_data(test_data, seq_length=config_net["sq"])
 
     train_dataset = DataSet(np.array(Xp_tr, dtype=object), np.array(
-        label_tr, dtype=object), BATCH_SIZE)
+        label_tr, dtype=object), config_net["batch_size"])
     test_dataset = DataSet(np.array(Xp_ts, dtype=object),
-                           np.array(label_ts, dtype=object), BATCH_SIZE)
+                           np.array(label_ts, dtype=object), config_net["batch_size"])
     print("Model Creation")
-    model = net.DBLSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
-                 hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
-                 LR=LR, decay_rate=DECAY_RATE, decay_steps=DECAY_STEPS, ch_path=CHECKPOINT_PATH)
+    model = net.DBLSTM(batch_size=config_net["batch_size"], sequence_length=config_net["sq"], n_mffc=config_mfcc["order_mfcc"],
+                 hidden_units=config_net["hidden_units"], out_classes=config_net["num_phoneme_classes"], dropout=config_net["dropout"], 
+                 num_epochs=config_net["epochs"], log=config_net["log_file"],LR=config_net["lr"], 
+                 decay_rate=config_net["lr_decay"], decay_steps=config_net["decay_steps"], ch_path=config_net["checkpoint_path"])
     #model = net._LSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
     #                  hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
     #                  LR=LR, ch_path=CHECKPOINT_PATH)

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pickle
 
-
+#save all paths to the data
 def paths_from_region(path_to_data):
     regions = os.listdir(path_to_data)
     _paths = []
@@ -34,9 +34,7 @@ def save_json_dict(data, file_name):
 
 
 def substitute_phonemes(file,
-                        sentences=False,  # should we apply !ENTER/!EXIT for start/end?
-                        foldings={},  # substitute phones with foldings dict
-                        startend_sil=False):  # should we substitute start and end w/ sil
+                        foldings={}):  # substitute phones with foldings dict
     fullname = file
     # print(fullname)
     phones_before = []
@@ -59,17 +57,6 @@ def substitute_phonemes(file,
         text_buffer.append(tmpline.split())
     first_phone = text_buffer[0][-1].strip()
     last_phone = text_buffer[-1][-1].strip()
-    if sentences:
-        if first_phone == 'h#' or first_phone == 'sil' or first_phone == '<s>' or first_phone == '{B_TRANS}':
-            # 'h#' or 'sil' for TIMIT
-            # '<s>' for CSJ (and other XML/Thomas-like)
-            # '{B_TRANS}' for Buckeye
-            text_buffer[0] = text_buffer[0][:-1] + ['!ENTER']
-        if last_phone == 'h#' or last_phone == 'sil' or last_phone == '</s>' or last_phone == '{E_TRANS}':
-            text_buffer[-1] = text_buffer[-1][:-1] + ['!EXIT']
-    if startend_sil:
-        text_buffer[0] = text_buffer[0][:-1] + ['sil']
-        text_buffer[-1] = text_buffer[-1][:-1] + ['sil']
     for buffer_line in text_buffer:
         phones_after.append(buffer_line[-1])
         fw.write(' '.join(buffer_line) + '\n')
@@ -102,7 +89,7 @@ def normalize_mfcc(mfcc):
     return (mfcc - means)/stds
 
 
-def compute_mfcc_mceps(paths, config_mfcc):
+def compute_mfcc(paths, config_mfcc):
     _data_x = {}
     for p in paths:
         if not "SA" in p:
@@ -113,14 +100,8 @@ def compute_mfcc_mceps(paths, config_mfcc):
                                         n_fft=config_mfcc["n_fft"],
                                         hop_length=config_mfcc["hop_length"])
             mfccs = normalize_mfcc(mfccs)
-            # frames = librosa.util.frame(x, frame_length=config_mfcc["n_fft"], hop_length=config_mfcc["hop_length"]).astype(np.float64).T
-            # # Windowing
-            # frames *= pysptk.blackman(config_mfcc["n_fft"], normalize=1)
-            # mceps = pysptk.mcep(frames)#order,alpha) 
-            # mceps = normalize_mfcc(mceps)
             id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
 
-            # _data_x[id_] = (mfccs, mceps, p)
             _data_x[id_] = (mfccs, p)
     return _data_x
 
@@ -179,7 +160,6 @@ def match_data(sentence_entry, phonem_dict, verbose=False, phoneme_wise=False):
         sentence_entry (Tuple):
           A tuple of two elements, (mfccs, path): mfcc:np array shape paths
       Returns:
-        Tuple:
           Mfccs and label paierd
     """
     phoneme_file = sentence_entry[-1]+".PHN"
@@ -227,14 +207,14 @@ def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
     # Windowing
     frames *= pysptk.blackman(config_mfcc_mceps["n_fft"], normalize=1)
     mceps = pysptk.mcep(frames, config_mfcc_mceps['order_mcep']) #,alpha) 
-    mceps = normalize_mfcc(mceps)
+    mceps = normalize_mfcc(mceps.T).T #transpose twice in order to normalize on right axis
     mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
                                         n_mfcc=config_mfcc_mceps["order_mfcc"],
                                         n_fft=config_mfcc_mceps["n_fft"],
                                         hop_length=config_mfcc_mceps["hop_length"])
     mfccs = normalize_mfcc(mfccs)
     id_ = "_" + p
-    _data_x[id_] = (mfccs, mceps)
+    _data_x[id_] = (mfccs.T, mceps) #Don't forget mfcc.T -> now both have shape (#frames, #mfcc/mceps)
   return _data_x
   
 
@@ -243,7 +223,7 @@ def get_ppgs_mceps(converto, mfcc_mcep):
   y = []
   for mfcc, mcep in mfcc_mcep.values():
     ppgs = converto.predict(mfcc)
-    dif = ppgs.shape[0] - mcep.shape[0]
+    dif = ppgs.shape[0] - mcep.shape[0] # frame mismatch in some case -> mcep cut some starting silence frame
     X.append(ppgs[dif:])
     y.append(mcep)
   return X, y
