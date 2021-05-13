@@ -39,12 +39,16 @@ class DataSet(object):
     self._batch_size = batch_size
     self._indexes_in_epoch = list(range(batch_size))
     self._index_in_sentences = np.zeros([self._batch_size], dtype=int)
+    self.shuffle()
+  
     # Shuffle the data
+  def shuffle(self):
     perm = np.arange(len(self._data))
     np.random.shuffle(perm)
     self._data = self._data[perm]
     self._labels = self._labels[perm]
-  
+
+
   def next_batch(self, batch_size):
     start = self._index_in_epoch
     self._index_in_epoch += batch_size
@@ -52,11 +56,7 @@ class DataSet(object):
     if self._index_in_epoch > self._num_examples:
       # Finished epoch
       self._epochs_completed += 1
-      # Shuffle the data
-      perm = np.arange(len(self._data))
-      np.random.shuffle(perm)
-      self._data = self._data[perm]
-      self._labels = self._labels[perm]
+      self.shuffle()
       start = 0
       self._index_in_epoch = batch_size
     
@@ -109,7 +109,7 @@ class DataSet(object):
     sequence_labels = [self._labels[i:(i+sequence_length)] for i in range(0, num_sequences)]
     return sequence_data, sequence_labels
 
-def get_avarage_size_dataset(dataset, sequence_length=20, average_size=2, verbose=False):
+def get_average_size_dataset(dataset, sequence_length=20, average_size=2, verbose=False):
   counts = []
   for i in range(average_size):
     ap, bp = None, None
