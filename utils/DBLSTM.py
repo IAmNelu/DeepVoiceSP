@@ -168,6 +168,22 @@ class _LSTM:
   def load_weights(self, path):
     self.model.load_weights(path)
 
+def get_model(hidden_units, batch_size, seq_len, input_dim, output_dim, dropout, names) :
+  model = tf.keras.models.Sequential()
+  model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + names[0]), name=names[0], batch_input_shape=(batch_size, seq_len, input_dim)))
+  model.add(Dropout(dropout))
+  model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + names[1]), name=names[1]))
+  model.add(Dropout(dropout))
+  model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + names[2]), name=names[2]))
+  model.add(Dropout(dropout))
+  model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + names[3]), name=names[3]))
+  model.add(Dropout(dropout))
+  model.add(Dense(output_dim))
+  model.add(Dropout(dropout))
+  model.add(Activation('softmax'))
+  return model
+
+
 class DBLSTM:
   def __init__(self, batch_size, sequence_length, n_mffc, hidden_units, 
                out_classes, dropout=0.3, num_epochs=10, log="train.log",
@@ -183,20 +199,8 @@ class DBLSTM:
     self.batch_size = batch_size
     self.ch_path = ch_path
     self.layer_names = ["LSTM0","LSTM1","LSTM2", "LSTM3"]
-    model = tf.keras.models.Sequential()
-    model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + self.layer_names[0]), name=self.layer_names[0], batch_input_shape=(batch_size, sequence_length, n_mffc)))
-    model.add(Dropout(dropout))
-    model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + self.layer_names[1]), name=self.layer_names[1]))
-    model.add(Dropout(dropout))
-    model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + self.layer_names[2]), name=self.layer_names[2]))
-    model.add(Dropout(dropout))
-    model.add(Bidirectional(LSTM(hidden_units, return_sequences=True, stateful=True, name="__" + self.layer_names[3]), name=self.layer_names[3]))
-    model.add(Dropout(dropout))
-    model.add(Dense(out_classes))
-    model.add(Dropout(dropout))
-    model.add(Activation('softmax'))
+    self.model = get_model(hidden_units, batch_size, sequence_length, n_mffc, out_classes, dropout, self.layer_names)
     self.out_classes = out_classes 
-    self.model  = model
     self.logs = []
     self.log_path = log
  
