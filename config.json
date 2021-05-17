@@ -13,7 +13,7 @@
   "model_to_load": "checkpoints/DBLSTM-0000.ckpt",
   "MFCC_DATA": {
     "sampling_frequency": 16000,
-    "order_mfcc": 13,
+    "order_mfcc": 39,
     "n_fft": 512,
     "hop_length": 160
   },
@@ -22,8 +22,8 @@
     "epochs": 100,
     "dropout": 0.7,
     "hidden_units": 512,
-    "order_mfcc": 13,
-    "lr": 0.0001,
+    "order_mfcc": 39,
+    "lr": 0.00005,
     "sq":20,
     "lr_decay": 0.97,
     "decay_steps": 5,
@@ -35,8 +35,8 @@
     "preload_path": "",
     "checkpoint_path": "/tmp/ifrim__checkpoints/DBLSTM-{epoch:04d}.ckpt",
     "log_file": "/tmp/ifrim__training.log",
-    "final_checkpoint": "../checkpoints/final/ppg2mcep.ckpt",
-    "best_checkpoint": "../checkpoints/best/ppg2mcep.ckpt"
+    "final_checkpoint": "../checkpoints/final/mfcc2ppg.ckpt",
+    "best_checkpoint": "../checkpoints/best/mfcc2ppg.ckpt"
   },
   "PHONEME_WISE": false,
   "PADDING_SIL": 1

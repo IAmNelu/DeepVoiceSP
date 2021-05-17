@@ -187,7 +187,7 @@ def get_model(hidden_units, batch_size, seq_len, input_dim, output_dim, dropout,
 class DBLSTM:
   def __init__(self, batch_size, sequence_length, n_mffc, hidden_units, 
                out_classes, dropout=0.3, num_epochs=10, log="train.log",
-               LR=0.01, decay_rate=0.97, decay_steps=5, ch_path=None):
+               LR=0.01, decay_rate=0.97, decay_steps=5, ch_path="", best_path="", last_path=""):
     self.initial_learning_rate = LR
     self.decay_rate = decay_rate
     self.decay_steps = decay_steps
@@ -198,6 +198,8 @@ class DBLSTM:
     self.sentence_length = sequence_length
     self.batch_size = batch_size
     self.ch_path = ch_path
+    self.best_path = best_path
+    self.last_path = last_path
     self.layer_names = ["LSTM0","LSTM1","LSTM2", "LSTM3"]
     self.model = get_model(hidden_units, batch_size, sequence_length, n_mffc, out_classes, dropout, self.layer_names)
     self.out_classes = out_classes 
@@ -292,6 +294,8 @@ class DBLSTM:
     self.logs +=[f"=== TIME {time.asctime(time.localtime())}===\n"]
     start_training_time = time.time()
     self.print_log()
+
+    best_acc = 0
     for epoch in range(self.epochs):
       start_epoch_time = time.time()
       initial_eos = np.array([True]*self.batch_size)
@@ -332,15 +336,19 @@ class DBLSTM:
       self.logs.append(f"== TIME TRAINING EPOCH {time_ellapsed} seconds ==\n")
       predicted, ground_truth , acc = self.evaluate_model(test_dataset)
      
-      cf_np = confusion_matrix(ground_truth, predicted, labels=range(0,self.out_classes))
-      cf_lst = [str(r) + "\n" for r in cf_np]
       self.logs.append(f"== ACCURACY ON TEST-SET {acc * 100:.2f}% ==\n")
-      self.logs.append("=== CONFUSION MATRIX ===")
-      self.logs += cf_lst
-      self.logs.append("=== CONFUSION MATRIX FINISH ===")
+      #cf_np = confusion_matrix(ground_truth, predicted, labels=range(0,self.out_classes))
+      #cf_lst = [str(r) + "\n" for r in cf_np]
+      #self.logs.append("=== CONFUSION MATRIX ===")
+      #self.logs += cf_lst
+      #self.logs.append("=== CONFUSION MATRIX FINISH ===")
       self.print_log()
+      if (acc > best_acc):
+        best_acc = acc
+        self.save_weights(self.best_path)
 
     end_training = time.time()
+    self.save_weights(self.last_path)
     self.logs += ["===FINISHED TRAINING ===\n", f"N EPOCHS: {self.epochs}\n", f"LR: {self.LR}\n"]
     self.logs +=[f"=== TIME {time.asctime(time.localtime())}===\n"]
     time_ellapsed  = (end_training - start_training_time)

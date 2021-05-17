@@ -84,6 +84,8 @@ def normalize_mfcc(mfcc):
         An ndarray containing normalized mfcc data with the same shape as
         the input.
     """
+    #compute mean and std for each order of mfcc for the whole sentence
+    #input has shape (#frames_sentence, #order_mfcc)
     means = np.mean(mfcc, 0)
     stds = np.std(mfcc, 0)
     return (mfcc - means)/stds
@@ -99,7 +101,7 @@ def compute_mfcc(paths, config_mfcc):
                                         n_mfcc=config_mfcc["order_mfcc"],
                                         n_fft=config_mfcc["n_fft"],
                                         hop_length=config_mfcc["hop_length"])
-            mfccs = normalize_mfcc(mfccs)
+            mfccs = normalize_mfcc(mfccs.T).T
             id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
 
             _data_x[id_] = (mfccs, p)
@@ -207,12 +209,12 @@ def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
     # Windowing
     frames *= pysptk.blackman(config_mfcc_mceps["n_fft"], normalize=1)
     mceps = pysptk.mcep(frames, config_mfcc_mceps['order_mcep']) #,alpha) 
-    mceps = normalize_mfcc(mceps.T).T #transpose twice in order to normalize on right axis
+    mceps = normalize_mfcc(mceps) #transpose twice in order to normalize on right axis
     mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
                                         n_mfcc=config_mfcc_mceps["order_mfcc"],
                                         n_fft=config_mfcc_mceps["n_fft"],
                                         hop_length=config_mfcc_mceps["hop_length"])
-    mfccs = normalize_mfcc(mfccs)
+    mfccs = normalize_mfcc(mfccs.T).T
     id_ = "_" + p
     _data_x[id_] = (mfccs.T, mceps) #Don't forget mfcc.T -> now both have shape (#frames, #mfcc/mceps)
   return _data_x

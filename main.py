@@ -114,7 +114,8 @@ if __name__ == "__main__":
     model = net.DBLSTM(batch_size=config_net["batch_size"], sequence_length=config_net["sq"], n_mffc=config_mfcc["order_mfcc"],
                  hidden_units=config_net["hidden_units"], out_classes=config_net["num_phoneme_classes"], dropout=config_net["dropout"], 
                  num_epochs=config_net["epochs"], log=config_net["log_file"],LR=config_net["lr"], 
-                 decay_rate=config_net["lr_decay"], decay_steps=config_net["decay_steps"], ch_path=config_net["checkpoint_path"])
+                 decay_rate=config_net["lr_decay"], decay_steps=config_net["decay_steps"], 
+                 ch_path=config_net["checkpoint_path"], best_path=config_net["best_checkpoint"], last_path = config_net["final_checkpoint"])
     #model = net._LSTM(batch_size=BATCH_SIZE, sequence_length=SQ, n_mffc=config_mfcc["order_mfcc"],
     #                  hidden_units=HIDDEN_UNITS, out_classes=NUM_CLASSES, dropout=DropOut, num_epochs=EPOCHS, log=log_file_path,
     #                  LR=LR, ch_path=CHECKPOINT_PATH)
