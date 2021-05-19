@@ -32,7 +32,7 @@ def set_global_variables(file_name):
   global PHONEME_WISE
   PHONEME_WISE = _dict["PHONEME_WISE"]
   global CHECKPOINT_PATH
-  CHECKPOINT_PATH = _dict["CHECKPOINT_PATH"]
+  CHECKPOINT_PATH =  config_net["checkpoint_path"]
   global padding_silence
   padding_silence = _dict["PADDING_SIL"]
 
