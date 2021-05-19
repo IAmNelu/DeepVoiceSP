@@ -122,8 +122,8 @@ if __name__ == "__main__":
   # print("Start Training")
   # if config_run["propTRAIN"]:
   #     model.train_model(train_dataset, test_dataset)
-  train_data, train_label = pd.get_data_from_dict(train_data)
-  test_data, test_label = pd.get_data_from_dict(test_data)
+  train_data, train_label = pf.get_data_from_dict(train_data)
+  test_data, test_label = pf.get_data_from_dict(test_data)
   model = net.DBLSTM( batch_size=config_net["batch_size"], n_mffc=config_mfcc["order_mfcc"], 
                       hidden_units=config_net["hidden_units"], out_classes=config_net["num_phoneme_classes"], 
                       dropout=config_net["dropout"], num_epochs=config_net["epochs"], 
