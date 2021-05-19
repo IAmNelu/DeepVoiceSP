@@ -6,8 +6,8 @@ import data_preparation as dp
 import padding_functions as pf 
 from Dataset import DataSet
 import numpy as np
-import DBLSTM as net
-
+# import DBLSTM as net
+import DBLSTM_MFCC_PPG as net
 
 config_file = "config.json"
 
