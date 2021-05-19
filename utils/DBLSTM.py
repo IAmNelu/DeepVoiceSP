@@ -369,6 +369,6 @@ class DBLSTM:
   def predict(self, mfcc):
     initial_eos = np.array([True]*self.batch_size)
     reset_states(self.model, self.layer_names, initial_eos)
-    ppg = self.model(np.vstack([mfcc.T[np.newaxis,:]]*self.batch_size))[0]
+    ppg = self.model(np.vstack([mfcc[np.newaxis,:]]*self.batch_size))[0]
     reset_states(self.model, self.layer_names, initial_eos)
     return ppg
