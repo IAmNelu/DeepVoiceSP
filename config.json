@@ -1,8 +1,7 @@
 {
   "TRAIN_PATH": "/home/semesterproject/datasets/TIMIT/TRAIN/",
   "TEST_PATH": "/home/semesterproject/datasets/TIMIT/TEST/",
-  "FOLDING_DICT": "foldings61-39.json",
-  "CHECKPOINT_PATH": "/tmp/ifrim__checkpoints/DBLSTM-{epoch:04d}.ckpt",
+  "FOLDING_DICT": "config_files/foldings61-39.json",
   "CONFIG_RUN": {
     "process_data": true,
     "process_phonemes": false,
@@ -10,33 +9,33 @@
     "propLOAD": false,
     "propRMSilencePostLoad": true
   },
-  "model_to_load": "checkpoints/DBLSTM-0000.ckpt",
+  "model_to_load": "checkpoints/final/mfcc2ppg.ckpt",
   "MFCC_DATA": {
     "sampling_frequency": 16000,
     "order_mfcc": 39,
     "n_fft": 512,
     "hop_length": 160
   },
-  "NETWORK_PARAM":{
+  "NETWORK_PARAM": {
     "batch_size": 12,
     "epochs": 100,
     "dropout": 0.7,
     "hidden_units": 512,
     "order_mfcc": 39,
     "lr": 0.00005,
-    "sq":20,
+    "sq": 20,
     "lr_decay": 0.97,
     "decay_steps": 5,
-    "num_phoneme_classes":40,
+    "num_phoneme_classes": 40,
     "optim": "adam",
     "preload": false,
     "validation_stop": true,
     "validation_stop_value": 0.01,
     "preload_path": "",
-    "checkpoint_path": "/tmp/ifrim__checkpoints/DBLSTM-{epoch:04d}.ckpt",
-    "log_file": "/tmp/ifrim__training.log",
-    "final_checkpoint": "../checkpoints/final/mfcc2ppg.ckpt",
-    "best_checkpoint": "../checkpoints/best/mfcc2ppg.ckpt"
+    "checkpoint_path": "/tmp/mfcc2ppg_checkpoints/DBLSTM-{epoch:04d}.ckpt",
+    "log_file": "/tmp/mfcc2ppg_training.log",
+    "final_checkpoint": "checkpoints/final/mfcc2ppg.ckpt",
+    "best_checkpoint": "checkpoints/best/mfcc2ppg.ckpt"
   },
   "PHONEME_WISE": false,
   "PADDING_SIL": 1

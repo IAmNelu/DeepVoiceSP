@@ -106,3 +106,14 @@ def pad_data(dictionay_data, seq_length=20):
       labels.append(y_p)
 
   return Xp, labels
+  
+def get_data_from_dict(dictionay_data):
+  Xp = []
+  labels = []
+  for speaker, data in dictionay_data.items():
+    x = data['mfcc']
+    y = data['y']
+    Xp.append(x)
+    labels.append(y)
+
+  return Xp, labels

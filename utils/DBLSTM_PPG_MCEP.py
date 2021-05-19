@@ -25,6 +25,7 @@ def get_model(hidden_units, batch_size, input_dim, output_dim, dropout) :
   model.add(Dropout(dropout)) 
   return model
 
+#shuffle batches of data
 def shuffle_batches(X, y):
   indices = np.arange(len(X))
   random.shuffle(indices)
@@ -106,8 +107,8 @@ class DBLSTM:
     test_loss = tf.keras.metrics.Mean('test_loss', dtype=tf.float32)
 
     current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    train_log_dir = self.paths["log"] + '/logs/gradient_tape/' + current_time + '/train'
-    test_log_dir = self.paths["log"] + '/logs/gradient_tape/' + current_time +  '/test'
+    train_log_dir = self.paths["log"] + '/ppg2mcep/' + current_time + '/train'
+    test_log_dir = self.paths["log"] + '/ppg2mcep/' + current_time +  '/test'
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
         
