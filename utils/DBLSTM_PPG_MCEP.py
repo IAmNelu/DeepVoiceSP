@@ -161,8 +161,11 @@ class DBLSTM:
   def load_model(self, path):
     self.model.load_weights(path)
   
-  def predict(self):
-    pass
+  def predict(self, ppgs):
+    # Marco fai controlli sulle shape
+    ppgs = ppgs[np.newaxis,:]
+    mceps = self.model(ppgs, training=False)[0]
+    return self.scale_results(mceps)
 
   def scale_results(self, mceps):
     mceps_sc = mceps*self.scaler["std"] + self.scaler["mean"]
