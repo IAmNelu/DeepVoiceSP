@@ -9,215 +9,213 @@ import pickle
 
 #save all paths to the data
 def paths_from_region(path_to_data):
-    regions = os.listdir(path_to_data)
-    _paths = []
-    for region in regions:
-        speakers = os.listdir(path_to_data + region + "/")
-        for speaker in speakers:
-            speaker_path = path_to_data + region + "/" + speaker
-            speaches_path_full = os.listdir(speaker_path)
-            names = [speaker_path + "/" +
-                     f for f in set([file.split(".")[0] for file in speaches_path_full])]
-            _paths += names
-    return _paths
+  regions = os.listdir(path_to_data)
+  _paths = []
+  for region in regions:
+    speakers = os.listdir(path_to_data + region + "/")
+    for speaker in speakers:
+      speaker_path = path_to_data + region + "/" + speaker
+      speaches_path_full = os.listdir(speaker_path)
+      names = [speaker_path + "/" +
+                f for f in set([file.split(".")[0] for file in speaches_path_full])]
+      _paths += names
+  return _paths
 
 
 def load_json_dict(file_name):
-    with open(file_name) as json_file:
-        foldings_dict = json.load(json_file)
-    return foldings_dict
+  with open(file_name) as json_file:
+    foldings_dict = json.load(json_file)
+  return foldings_dict
 
 
 def save_json_dict(data, file_name):
-    with open(file_name, 'w') as outfile:
-        json.dump(data, outfile)
+  with open(file_name, 'w') as outfile:
+    json.dump(data, outfile)
 
 
-def substitute_phonemes(file,
-                        foldings={}):  # substitute phones with foldings dict
-    fullname = file
-    # print(fullname)
-    phones_before = []
-    phones_after = []
-    os.rename(fullname, fullname+'~')
-    fr = open(fullname+'~', 'r')
-    fw = open(fullname, 'w')
-    text_buffer = []
-    all_lines = fr.readlines()
-    # print(all_lines)
-    for line in all_lines:
-        phones_before.append(line.split()[-1])  # phone last elt of line
-        tmpline = line
-        tmpline = tmpline.replace('-', '')
-        tmp = tmpline.split()
-        for k, v in foldings.items():
-            if tmp[-1] == k:
-                tmp[-1] = v
-                tmpline = ' '.join(tmp)
-        text_buffer.append(tmpline.split())
-    first_phone = text_buffer[0][-1].strip()
-    last_phone = text_buffer[-1][-1].strip()
-    for buffer_line in text_buffer:
-        phones_after.append(buffer_line[-1])
-        fw.write(' '.join(buffer_line) + '\n')
-    fw.close()
-    fr.close()
-    os.remove(fullname+'~')
+def substitute_phonemes(file, foldings={}):  # substitute phones with foldings dict
+  fullname = file
+  # print(fullname)
+  phones_before = []
+  phones_after = []
+  os.rename(fullname, fullname+'~')
+  fr = open(fullname+'~', 'r')
+  fw = open(fullname, 'w')
+  text_buffer = []
+  all_lines = fr.readlines()
+  # print(all_lines)
+  for line in all_lines:
+    phones_before.append(line.split()[-1])  # phone last elt of line
+    tmpline = line
+    tmpline = tmpline.replace('-', '')
+    tmp = tmpline.split()
+    for k, v in foldings.items():
+      if tmp[-1] == k:
+        tmp[-1] = v
+        tmpline = ' '.join(tmp)
+    text_buffer.append(tmpline.split())
+  #first_phone = text_buffer[0][-1].strip()
+  #last_phone = text_buffer[-1][-1].strip()
+  for buffer_line in text_buffer:
+    phones_after.append(buffer_line[-1])
+    fw.write(' '.join(buffer_line) + '\n')
+  fw.close()
+  fr.close()
+  os.remove(fullname+'~')
 
 
 def get_phonemes(file_path):
-    with open(file_path, "r") as f:
-        all_lines = f.readlines()
-        phns = set([l.split(' ')[-1].strip() for l in all_lines])
-        return phns
+  with open(file_path, "r") as f:
+    all_lines = f.readlines()
+    phns = set([l.split(' ')[-1].strip() for l in all_lines])
+    return phns
 
 
 def normalize_mfcc(mfcc):
-    """Normalize mfcc data using the following formula:
-    normalized = (mfcc - mean)/standard deviation
-    Args:
-      mfcc (numpy.ndarray):
-        An ndarray containing mfcc data.
-        Its shape is [sentence_length, coefficients]
-    Returns:
-      numpy.ndarray:
-        An ndarray containing normalized mfcc data with the same shape as
-        the input.
-    """
-    #compute mean and std for each order of mfcc for the whole sentence
-    #input has shape (#frames_sentence, #order_mfcc)
-    means = np.mean(mfcc, 0)
-    stds = np.std(mfcc, 0)
-    return (mfcc - means)/stds
+  """Normalize mfcc data using the following formula:
+  normalized = (mfcc - mean)/standard deviation
+  Args:
+    mfcc (numpy.ndarray):
+      An ndarray containing mfcc data.
+      Its shape is [sentence_length, coefficients]
+  Returns:
+    numpy.ndarray:
+      An ndarray containing normalized mfcc data with the same shape as
+      the input.
+  """
+  #compute mean and std for each order of mfcc for the whole sentence
+  #input has shape (#frames_sentence, #order_mfcc)
+  means = np.mean(mfcc, 0)
+  stds = np.std(mfcc, 0)
+  return (mfcc - means)/stds
 
 
 def compute_mfcc(paths, config_mfcc):
-    _data_x = {}
-    for p in paths:
-        if not "SA" in p:
-            x, _ = librosa.load(p + ".WAV", sr=config_mfcc["sampling_frequency"])
-            mfccs = librosa.feature.mfcc(y=x,
-                                        sr=config_mfcc["sampling_frequency"],
-                                        n_mfcc=config_mfcc["order_mfcc"],
-                                        n_fft=config_mfcc["n_fft"],
-                                        hop_length=config_mfcc["hop_length"])
-            mfccs = normalize_mfcc(mfccs.T).T
-            id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
+  _data_x = {}
+  for p in paths:
+    if not "SA" in p:
+      x, _ = librosa.load(p + ".WAV", sr=config_mfcc["sampling_frequency"])
+      mfccs = librosa.feature.mfcc(y=x,
+                                  sr=config_mfcc["sampling_frequency"],
+                                  n_mfcc=config_mfcc["order_mfcc"],
+                                  n_fft=config_mfcc["n_fft"],
+                                  hop_length=config_mfcc["hop_length"])
+      mfccs = normalize_mfcc(mfccs.T).T
+      id_ = p.split("/")[-2] + "_" + p.split("/")[-1]
 
-            _data_x[id_] = (mfccs, p)
-    return _data_x
+      _data_x[id_] = (mfccs, p)
+  return _data_x
 
 
 def read_phn(f, temp_mfcc, phonem_dict, phoneme_wise=False):
-    # Read PHN files
-    temp_phones = pd.read_csv(f, delimiter=" ", header=None,  names=[
-                              'start', 'end', 'phone'])
+  # Read PHN files
+  temp_phones = pd.read_csv(f, delimiter=" ", header=None,  names=[
+                            'start', 'end', 'phone'])
+  if phoneme_wise:
+    phones_list = []
+    mfcc_block_list = []
 
+  # Get the length of the phone data
+  _, phn_len, _ = temp_phones.iloc[-1]
+  phn_len_mill = int(phn_len/160)  # 160 since each frame is 10ms
+  if not phoneme_wise:
+    if phn_len_mill < temp_mfcc.shape[1]:
+      # An array of class labels for every 10 ms in the phone data
+      # phones[2] is the phoneme annotated from 20-30 ms
+      phones = np.zeros((len(set(phonem_dict.values())), phn_len_mill), dtype=int)
+      # Make sure the length of mfcc_data and phn_len_mill are equal
+      mfcc_data = temp_mfcc[:, 0:phn_len_mill]
+    else:
+      phones = np.zeros((set(len(phonem_dict.values())), temp_mfcc.shape[1]))
+      mfcc_data = temp_mfcc
+
+  d = phn_len_mill - temp_mfcc.shape[1]
+
+# Convert the string phonemes to class labels
+  for i, (s, e, phone) in enumerate(temp_phones.iloc):
+    start = int(s/160.0)
+    end = int(e/160.0)
     if phoneme_wise:
-        phones_list = []
-        mfcc_block_list = []
+      one_hot = np.zeros(len(set(phonem_dict.values())))
+      one_hot[phonem_dict[phone]] = 1
+      phones_list.append(one_hot)
+      mfcc_block_list.append(temp_mfcc[:, start: min(end, temp_mfcc.shape[1])])
+    else:
+      # print(f"{start} s, {end} e, {len}")
+      phones[phonem_dict[phone], start:min(end, phones.shape[1])] = 1
+  # print(f"{phone} found at index {ALL_PHONEMES.index(phone)}, y becomes {phones[:,start:min(end,phones.shape[1])]}")
 
-    # Get the length of the phone data
-    _, phn_len, _ = temp_phones.iloc[-1]
-    phn_len_mill = int(phn_len/160)  # 160 since each frame is 10ms
-    if not phoneme_wise:
-        if phn_len_mill < temp_mfcc.shape[1]:
-            # An array of class labels for every 10 ms in the phone data
-            # phones[2] is the phoneme annotated from 20-30 ms
-            phones = np.zeros(
-                (len(set(phonem_dict.values())), phn_len_mill), dtype=int)
-            # Make sure the length of mfcc_data and phn_len_mill are equal
-            mfcc_data = temp_mfcc[:, 0:phn_len_mill]
-        else:
-            phones = np.zeros((set(len(phonem_dict.values())), temp_mfcc.shape[1]))
-            mfcc_data = temp_mfcc
+  if phoneme_wise:
+    return np.array(phones_list), mfcc_block_list, d
 
-    d = phn_len_mill - temp_mfcc.shape[1]
-
- # Convert the string phonemes to class labels
-    for i, (s, e, phone) in enumerate(temp_phones.iloc):
-        start = int(s/160.0)
-        end = int(e/160.0)
-        if phoneme_wise:
-            one_hot = np.zeros(len(set(phonem_dict.values())))
-            one_hot[phonem_dict[phone]] = 1
-            phones_list.append(one_hot)
-            mfcc_block_list.append(
-                temp_mfcc[:, start: min(end, temp_mfcc.shape[1])])
-        else:
-            # print(f"{start} s, {end} e, {len}")
-            phones[phonem_dict[phone], start:min(end, phones.shape[1])] = 1
-        # print(f"{phone} found at index {ALL_PHONEMES.index(phone)}, y becomes {phones[:,start:min(end,phones.shape[1])]}")
-
-    if phoneme_wise:
-        return np.array(phones_list), mfcc_block_list, d
-
-    return phones.astype(int), mfcc_data, d
+  return phones.astype(int), mfcc_data, d
 
 
 # receives an entry of the dictionary with key user_sentenceID -> (mfcc, path)
 def match_data(sentence_entry, phonem_dict, verbose=False, phoneme_wise=False):
-    """Match label to mfcc
-      Args:
-        sentence_entry (Tuple):
-          A tuple of two elements, (mfccs, path): mfcc:np array shape paths
-      Returns:
-          Mfccs and label paierd
-    """
-    phoneme_file = sentence_entry[-1]+".PHN"
+  """Match label to mfcc
+    Args:
+      sentence_entry (Tuple):
+        A tuple of two elements, (mfccs, path): mfcc:np array shape paths
+    Returns:
+        Mfccs and label paierd
+  """
+  phoneme_file = sentence_entry[-1]+".PHN"
 
-    mfcc_data = sentence_entry[0]
+  mfcc_data = sentence_entry[0]
 
-    phones, mfcc_data, d = read_phn(
-        phoneme_file, mfcc_data, phonem_dict, phoneme_wise=phoneme_wise)
-    if verbose:
-        if d != 0:
-            if abs(d) > 500:
-                print(f"length mismatch of {d} frames {sentence_entry[-1]}")
-    return mfcc_data, phones
+  phones, mfcc_data, d = read_phn(phoneme_file, mfcc_data, phonem_dict, phoneme_wise=phoneme_wise)
+  if verbose:
+    if d != 0:
+      if abs(d) > 500:
+        print(f"length mismatch of {d} frames {sentence_entry[-1]}")
+  return mfcc_data, phones
 
 
 def pair_data(x_dictionay, phonem_dict, phoneme_wise=False):
-    result_dict = {}
-    for k, v in x_dictionay.items():
-        mfcc, y = match_data(v, phonem_dict, verbose=True,
-                             phoneme_wise=phoneme_wise)
-        # result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1], "mceps":v[1]}
-        result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1]}
+  result_dict = {}
+  for k, v in x_dictionay.items():
+    mfcc, y = match_data(v, phonem_dict, verbose=True, phoneme_wise=phoneme_wise)
+    # result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1], "mceps":v[1]}
+    result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1]}
 
-    return result_dict
+  return result_dict
 
 
 def save_dict(x, path):
-    with open(path, 'wb') as f:
-        pickle.dump(x, f)
+  with open(path, 'wb') as f:
+    pickle.dump(x, f)
 
 
 def load_dict(path):
-    with open(path, 'rb') as f:
-        loaded_obj = pickle.load(f)
-        return loaded_obj
+  with open(path, 'rb') as f:
+    loaded_obj = pickle.load(f)
+    return loaded_obj
 
 
 def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
   _data_x = {}
   path_audios = os.listdir(path_to_data)
-
+  total_mceps = np.empty((0,config_mfcc_mceps['order_mcep']), float) #used to store mean and std for denormalize results
+  target_scaler = {}
   for p in path_audios:
     x, _ = librosa.load(path_to_data + '/' + p, sr=config_mfcc_mceps["sampling_frequency"])
     frames = librosa.util.frame(x, frame_length=config_mfcc_mceps["n_fft"], hop_length=config_mfcc_mceps["hop_length"]).astype(np.float64).T
     # Windowing
     frames *= pysptk.blackman(config_mfcc_mceps["n_fft"], normalize=1)
     mceps = pysptk.mcep(frames, config_mfcc_mceps['order_mcep']) #,alpha) 
-    mceps = normalize_mfcc(mceps) #transpose twice in order to normalize on right axis
+    total_mceps = np.vstack((total_mceps,mceps)) 
+    mceps = normalize_mfcc(mceps) 
     mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
-                                        n_mfcc=config_mfcc_mceps["order_mfcc"],
-                                        n_fft=config_mfcc_mceps["n_fft"],
-                                        hop_length=config_mfcc_mceps["hop_length"])
-    mfccs = normalize_mfcc(mfccs.T).T
+                                  n_mfcc=config_mfcc_mceps["order_mfcc"],
+                                  n_fft=config_mfcc_mceps["n_fft"],
+                                  hop_length=config_mfcc_mceps["hop_length"])
+    mfccs = normalize_mfcc(mfccs.T).T #transpose twice in order to normalize on right axis
     id_ = "_" + p
     _data_x[id_] = (mfccs.T, mceps) #Don't forget mfcc.T -> now both have shape (#frames, #mfcc/mceps)
-  return _data_x
+  target_scaler["mean"] = np.mean(total_mceps, 0)
+  target_scaler["std"] = np.std(total_mceps, 0)
+  return _data_x, target_scaler
   
 
 def get_ppgs_mceps(converto, mfcc_mcep):

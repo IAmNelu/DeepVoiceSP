@@ -75,7 +75,7 @@ def prepare_training_data(X_train, y_train, batch_size):
 class DBLSTM:
   def __init__( self, dim_ppgs, dim_mceps, hidden_units, batch_size=6, lr=0.001, epochs=1, 
                 dropout=0.3, decay_rate=1, decay_steps=5,
-                checkpoint_path="", best_checkpoint_path="", last_checkpoint_path="", log_path=""):
+                checkpoint_path="", best_checkpoint_path="", last_checkpoint_path="", log_path="", scaler=None):
     self.batch_size = batch_size
     self.initial_lr = lr
     self.epochs = epochs
@@ -84,6 +84,7 @@ class DBLSTM:
     self.decay_steps = decay_steps
     self.dim_ppgs = dim_ppgs
     self.dim_mceps = dim_mceps
+    self.scaler = scaler
     self.paths = {
       "checkpoints": checkpoint_path,
       "best": best_checkpoint_path,
@@ -162,4 +163,8 @@ class DBLSTM:
   
   def predict(self):
     pass
+
+  def scale_results(self, mceps):
+    mceps_sc = mceps*self.scaler["std"] + self.scaler["mean"]
+    return mceps_sc
   
