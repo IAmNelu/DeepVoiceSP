@@ -52,6 +52,7 @@ def padBatch(X, y, batch_size=6):
     for sampleX, sampleY in zip(X[i*batch_size:(i+1)*batch_size], y[i*batch_size:(i+1)*batch_size]):
       new_x = np.copy(sampleX)
       new_x.resize(new_shape)
+      # new_x[primo:,:] = sampleX[-1,:]
       new_y = np.copy(sampleY)
       new_y.resize(new_shape_y)
       # print(f"X: Shape before: {sampleX.shape} Shape After: {new_x.shape}")
@@ -189,9 +190,9 @@ class DBLSTM:
     self.save_weights(self.paths["last"])
 
 
-    with open(self.log_path + '.npy', 'wb') as f:
-      np.save(f, self.losses)
-      np.save(f, self.accuracies)
+    # with open(self.paths[] + '.npy', 'wb') as f:
+    #   np.save(f, self.losses)
+    #   np.save(f, self.accuracies)
     # read with :
     # with open(self.log_path + '.npy', 'rb') as f:
     #   a = np.load(f)
