@@ -18,7 +18,7 @@
   },
   "NETWORK_PARAM": {
     "batch_size": 12,
-    "epochs": 100,
+    "epochs": 10,
     "dropout": 0.7,
     "hidden_units": 512,
     "order_mfcc": 39,

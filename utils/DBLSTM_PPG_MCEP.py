@@ -70,7 +70,7 @@ def prepare_training_data(X_train, y_train, batch_size):
     X_train_s = [X_train[i] for i in sorted_in]
     y_train_s = [y_train[i] for i in sorted_in]
     X_train_pad, y_train_pad = padBatch(X_train_s, y_train_s, batch_size=batch_size)
-    return get_batches(X_train_pad, y_train_pad)
+    return get_batches(X_train_pad, y_train_pad, batch_size=batch_size)
     
 class DBLSTM:
   def __init__( self, dim_ppgs, dim_mceps, hidden_units, batch_size=6, lr=0.001, epochs=1, 
