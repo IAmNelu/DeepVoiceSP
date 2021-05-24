@@ -33,7 +33,7 @@
     "validation_stop_value": 0.01,
     "preload_path": "",
     "checkpoint_path": "/tmp/mfcc2ppg_checkpoints/DBLSTM-{epoch:04d}.ckpt",
-    "log_file": "/tmp/mfcc2ppg_training.log",
+    "log_file": "/tmp/mfcc2ppg_training",
     "final_checkpoint": "checkpoints/final/mfcc2ppg.ckpt",
     "best_checkpoint": "checkpoints/best/mfcc2ppg.ckpt"
   },
