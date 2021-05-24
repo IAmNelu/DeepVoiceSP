@@ -47,7 +47,7 @@ if __name__ == "__main__":
   inverse_dictpath = "label_inv_dict_"+str(config_net['dim_ppgs'])+".json"
   
   # load files (list of tuples (mfcc, mcep))
-  mfcc_mcep = dp.load_mfcc_mceps(PATH_TO_DATA, config_mfcc_mcep)
+  mfcc_mcep, target_scaler = dp.load_mfcc_mceps(PATH_TO_DATA, config_mfcc_mcep)
   # load converter mfcc to ppgs
   converter = mfcc2ppg.DBLSTM( batch_size=config_mfcc2ppg['batch_size'], 
                               sequence_length=config_mfcc2ppg['sequence_length'], 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                           batch_size=config_net["batch_size"], lr=config_net["lr"], epochs=config_net["epochs"], 
                           dropout=config_net["dropout"], decay_rate=config_net["lr_decay"], decay_steps=config_net["decay_steps"],
                           checkpoint_path=config_net["check_points"], best_checkpoint_path=config_net["best_checkpoint"], 
-                          last_checkpoint_path=config_net["final_checkpoint"], log_path=config_net["log_path"])
+                          last_checkpoint_path=config_net["final_checkpoint"], log_path=config_net["log_path"], scaler=target_scaler)
   # train network
   net2.train_model(X, labels)
     # split train test
