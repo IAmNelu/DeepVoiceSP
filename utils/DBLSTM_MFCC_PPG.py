@@ -40,13 +40,11 @@ def padBatch(X, y, batch_size=6):
   samples = len(X)
   ts = [i.shape[0] for i in X]
   batches = math.ceil(samples / batch_size)
-  print(f"Expected 728, got: {batches}")
   for i in range(batches):
     bucket = ts[i*batch_size:(i+1)*batch_size]
-    # print("Bucket len: expected 3:", len(bucket))
     # max_pb = max(bucket)
     max_pb = bucket[-1]
-    # print(f"max per bucket: {max_pb}")
+
     new_shape = (max_pb, X[i].shape[1])
     new_shape_y = (max_pb, y[i].shape[1])
     for sampleX, sampleY in zip(X[i*batch_size:(i+1)*batch_size], y[i*batch_size:(i+1)*batch_size]):
@@ -55,8 +53,7 @@ def padBatch(X, y, batch_size=6):
       # new_x[primo:,:] = sampleX[-1,:]
       new_y = np.copy(sampleY)
       new_y.resize(new_shape_y)
-      # print(f"X: Shape before: {sampleX.shape} Shape After: {new_x.shape}")
-      # print(f"y: Shape before: {sampleY.shape} Shape After: {new_y.shape}")
+
       newX.append(new_x)
       newY.append(new_y)
 
@@ -74,14 +71,11 @@ def get_batches(X, y, batch_size=6):
   
 def prepare_training_data(X_train, y_train, batch_size):
     timings = [x.shape[0] for x in X_train]
-    print(len(timings))
     sorted_in = np.argsort(timings)
     sorted_in = [s for s in sorted_in if timings[s] != 0]
     X_train_s = [X_train[i] for i in sorted_in]
     y_train_s = [y_train[i] for i in sorted_in]
     X_train_pad, y_train_pad = padBatch(X_train_s, y_train_s, batch_size=batch_size)
-    print(f"Train X:{len(X_train_pad)}-y:{len(y_train_pad)}")
-    print(f"Train X:{X_train_pad[0].shape}-y:{y_train_pad[0].shape}")
     return get_batches(X_train_pad, y_train_pad, batch_size)
   
 
@@ -118,9 +112,10 @@ class DBLSTM:
 
   def train_model(self, train_data, train_labels, test_data, test_labels):
     X_train, X_test, y_train, y_test = train_data, test_data, train_labels, test_labels
-    print(f"Train X:{len(X_train)}-y:{len(y_train)}")
-    print(f"Test X:{len(X_test)}-y:{len(y_test)}")
-    print(f"Batch size:{self.batch_size}")
+    if self.verbose:
+      print(f"Train X:{len(X_train)}-y:{len(y_train)}")
+      print(f"Test X:{len(X_test)}-y:{len(y_test)}")
+      print(f"Batch size:{self.batch_size}")
     X_train_btc, y_train_btc = prepare_training_data(X_train, y_train, self.batch_size)
     # define our metrics
     train_loss = tf.keras.metrics.Mean('train_loss', dtype=tf.float32)
@@ -186,8 +181,8 @@ class DBLSTM:
       if (test_acc.result() > best_acc):
         best_acc = test_acc.result()
         self.save_weights(self.paths["best"])
+      self.save_weights(self.paths["checkpoints"].format(epoch=epoch, accuracy=test_acc.result()*100))
       test_acc.reset_states()
-      self.save_weights(self.paths["checkpoints"])
     self.save_weights(self.paths["last"])
 
 
