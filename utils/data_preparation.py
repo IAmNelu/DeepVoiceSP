@@ -9,6 +9,10 @@ import pickle
 
 #save all paths to the data
 def paths_from_region(path_to_data):
+  '''
+  WORKS WITH TIMIT DATASET (data organized in regions and speakers)
+  takes path to dataset folder and creates a list of paths to the real data
+  '''
   regions = os.listdir(path_to_data)
   _paths = []
   for region in regions:
@@ -21,19 +25,26 @@ def paths_from_region(path_to_data):
       _paths += names
   return _paths
 
-
+#utils function to load a json dictionary
 def load_json_dict(file_name):
   with open(file_name) as json_file:
     foldings_dict = json.load(json_file)
   return foldings_dict
 
-
+#utils function to save a json dictionary
 def save_json_dict(data, file_name):
   with open(file_name, 'w') as outfile:
     json.dump(data, outfile)
 
 
-def substitute_phonemes(file, foldings={}):  # substitute phones with foldings dict
+def substitute_phonemes(file, foldings={}):
+  '''
+  Input:
+    phoneme transcription file
+    dictionary to use for substitution
+  Returns:
+    noting, but rewrites file applying the substitutions
+  '''  
   fullname = file
   # print(fullname)
   phones_before = []
@@ -45,26 +56,29 @@ def substitute_phonemes(file, foldings={}):  # substitute phones with foldings d
   all_lines = fr.readlines()
   # print(all_lines)
   for line in all_lines:
-    phones_before.append(line.split()[-1])  # phone last elt of line
+    phones_before.append(line.split()[-1])  # phone last elem of line
     tmpline = line
     tmpline = tmpline.replace('-', '')
     tmp = tmpline.split()
     for k, v in foldings.items():
-      if tmp[-1] == k:
+      if tmp[-1] == k: #check if phoneme has to be changed
         tmp[-1] = v
         tmpline = ' '.join(tmp)
     text_buffer.append(tmpline.split())
   #first_phone = text_buffer[0][-1].strip()
   #last_phone = text_buffer[-1][-1].strip()
-  for buffer_line in text_buffer:
+  for buffer_line in text_buffer: #read all file, now rewrite it
     phones_after.append(buffer_line[-1])
     fw.write(' '.join(buffer_line) + '\n')
   fw.close()
   fr.close()
-  os.remove(fullname+'~')
+  os.remove(fullname+'~') #clean up
 
 
 def get_phonemes(file_path):
+  '''
+  from phoneme transcripted file returns list of phonemes
+  '''
   with open(file_path, "r") as f:
     all_lines = f.readlines()
     phns = set([l.split(' ')[-1].strip() for l in all_lines])
@@ -74,23 +88,29 @@ def get_phonemes(file_path):
 def normalize_mfcc(mfcc):
   """Normalize mfcc data using the following formula:
   normalized = (mfcc - mean)/standard deviation
+  compute mean and std for each order of mfcc for the whole sentence
   Args:
-    mfcc (numpy.ndarray):
-      An ndarray containing mfcc data.
-      Its shape is [sentence_length, coefficients]
+    mfcc array (size is: [sentence_length x order_mfcc])
   Returns:
     numpy.ndarray:
       An ndarray containing normalized mfcc data with the same shape as
       the input.
   """
-  #compute mean and std for each order of mfcc for the whole sentence
-  #input has shape (#frames_sentence, #order_mfcc)
   means = np.mean(mfcc, 0)
   stds = np.std(mfcc, 0)
   return (mfcc - means)/stds
 
 
 def compute_mfcc(paths, config_mfcc):
+  '''extract normalized mfcc from list of data path
+  input:
+    list of paths to data, 
+    mfcc setting dictionary
+  return:
+    dictionary:
+      key: speaker code + _ + audio name
+      value: tuple (mfcc normalized, path)
+  '''
   _data_x = {}
   for p in paths:
     if not "SA" in p:
@@ -108,6 +128,16 @@ def compute_mfcc(paths, config_mfcc):
 
 
 def read_phn(f, temp_mfcc, phonem_dict, phoneme_wise=False):
+  '''perform match between mfcc extracted and corresponding phoneme
+  input:
+    f: phoneme transcription file path
+    temp_mfcc: mfcc extracted
+    phonem_dict: inverse dictionary
+  returns:
+    list of phones one-hot arrays, which will be the labels 
+    mfcc_data: final mfcc
+    d: mismatch length between mfcc extracted and phonemes in file
+  '''
   # Read PHN files
   temp_phones = pd.read_csv(f, delimiter=" ", header=None,  names=[
                             'start', 'end', 'phone'])
@@ -157,8 +187,9 @@ def match_data(sentence_entry, phonem_dict, verbose=False, phoneme_wise=False):
     Args:
       sentence_entry (Tuple):
         A tuple of two elements, (mfccs, path): mfcc:np array shape paths
+      phonemes dictionary
     Returns:
-        Mfccs and label paierd
+        Mfccs and labels paierd
   """
   phoneme_file = sentence_entry[-1]+".PHN"
 
@@ -173,6 +204,16 @@ def match_data(sentence_entry, phonem_dict, verbose=False, phoneme_wise=False):
 
 
 def pair_data(x_dictionay, phonem_dict, phoneme_wise=False):
+  '''
+    Pair data available in dictionary of (mfcc,paths)
+    returns:
+      dictionary:
+        key: same of input data dictionary (speaker code + _ + audio name)
+        values:
+          mfcc: transposed mfcc
+          y: paired label
+          path: path to file
+  '''
   result_dict = {}
   for k, v in x_dictionay.items():
     mfcc, y = match_data(v, phonem_dict, verbose=True, phoneme_wise=phoneme_wise)
@@ -181,12 +222,12 @@ def pair_data(x_dictionay, phonem_dict, phoneme_wise=False):
 
   return result_dict
 
-
+#util function to save pickle file
 def save_dict(x, path):
   with open(path, 'wb') as f:
     pickle.dump(x, f)
 
-
+#util function to load pickle file
 def load_dict(path):
   with open(path, 'rb') as f:
     loaded_obj = pickle.load(f)
@@ -194,6 +235,8 @@ def load_dict(path):
 
 
 def load_mfcc(path_to_wav_file, config_mfcc_mceps):
+  '''Extract mfcc information from a single file
+  '''
   x, _ = librosa.load(path_to_wav_file, sr=config_mfcc_mceps["sampling_frequency"])
   mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
                                 n_mfcc=config_mfcc_mceps["order_mfcc"],
@@ -203,6 +246,17 @@ def load_mfcc(path_to_wav_file, config_mfcc_mceps):
   return mfccs.T
   
 def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
+  '''extract normalized mfcc and mceps from list of data path
+  input:
+    list of paths to data, 
+    mfcc_mceps setting dictionary
+  return:
+    dictionary:
+      key: speaker code + _ + audio name
+      value: tuple (mfcc normalized, mceps normalized)
+    target scaler:
+      contains mcep mean and variance of target speaker in order to scale back mcep results
+  '''
   _data_x = {}
   path_audios = os.listdir(path_to_data)
   total_mceps = np.empty((0,config_mfcc_mceps['order_mcep']+1), float) #used to store mean and std for denormalize results
@@ -231,6 +285,15 @@ def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
 
 
 def get_ppgs_mceps(converto, mfcc_mcep):
+  '''
+  Use pretrained phase 1 to get ppgs from mfcc
+  input:
+    converto: phase1 model
+    mfcc_mcep exctracted dictionary
+  output:
+    X: computed ppgs
+    y: corresponding mcep labels 
+  '''
   X = []
   y = []
   for mfcc, mcep in mfcc_mcep.values():
