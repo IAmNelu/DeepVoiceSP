@@ -2,7 +2,9 @@ import argparse
 from os import lseek
 import sys
 import json
-import scipy
+import scipy.io
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="-1"    
 
 from tensorflow.python.autograph.core import converter 
 sys.path.insert(0,'./utils')
@@ -50,7 +52,7 @@ if __name__ == "__main__":
   inverse_dictpath = "label_inv_dict_"+str(config_ppg_mcep['dim_ppgs'])+".json"
   
   # load files (list of tuples (mfcc, mcep))
-  mfcc_mcep, _ = dp.load_mfcc_mceps(input_sentence, config_mfcc_mcep)
+  mfcc = dp.load_mfcc(input_sentence, config_mfcc_mcep)
   # load converter mfcc to ppgs
   converter = mfcc2ppg.DBLSTM( batch_size=config_mfcc2ppg['batch_size'], 
                               sequence_length=config_mfcc2ppg['sequence_length'], 
@@ -61,19 +63,21 @@ if __name__ == "__main__":
   
   # transform mfcc to ppgs with model
   print('Dio')
-  X, _ = dp.get_ppgs_mceps(converter, mfcc_mcep)
+  ppg_sentence = converter.predict(mfcc)
 
   target_scaler = dp.load_json_dict(target_scaler)
+  target_scaler['mean'] = np.array(target_scaler['mean'])
+  target_scaler['std'] = np.array(target_scaler['std'])
   # create network
   transformer = ppgs2mcep.DBLSTM(dim_ppgs=config_ppg_mcep["dim_ppgs"], dim_mceps=config_ppg_mcep["dim_mceps"], hidden_units=config_ppg_mcep["hidden_units"], 
                           batch_size=config_ppg_mcep["batch_size"], 
                           scaler=target_scaler)
                         
-  transformer.load_weights(config_ppg_mcep['path'])
+  transformer.load_model(config_ppg_mcep['path'])
 
-  # train network
-  result = transformer.predict(X[0])
-  scipy.io.savemat(input_sentence.split(".")[0]+".mat",result)
+  
+  result = transformer.predict(ppg_sentence)
+  scipy.io.savemat("../resconv/result"+".mat",{"mcep": result.numpy()})
     # split train test
     # sort and padd
     # train

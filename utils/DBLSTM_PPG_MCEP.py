@@ -114,7 +114,7 @@ class DBLSTM:
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
         
     for epoch in range(self.epochs):
-      
+      best_loss = 100000
       X, y = shuffle_batches(X_train_btc, y_train_btc)
       batch = 0
       last_loss = None
@@ -135,13 +135,18 @@ class DBLSTM:
         train_loss.reset_states()
       eval_loss = self.evaluate_model(X_test, y_test)
       test_loss(eval_loss)
+      
       with test_summary_writer.as_default():
         tf.summary.scalar('loss', test_loss.result(), step=epoch)
       template = 'Epoch {}, Loss: {}, Test Loss: {}'
       print(template.format(epoch+1, last_loss, test_loss.result()))
-      train_loss.reset_states()
+      train_loss.reset_states()   
+      if (test_loss.result() < best_loss):
+        best_loss = test_loss.result()
+        self.save_weights(self.paths["best"])
       test_loss.reset_states()
-      
+      self.save_weights(self.paths["checkpoints"])
+    self.save_weights(self.paths["last"])
       
   def evaluate_model(self, X_test, y_test):
     losses = []
@@ -155,7 +160,7 @@ class DBLSTM:
       losses.append(tf.reduce_mean(loss))
     return np.mean(losses)
   
-  def save_model(self, path):
+  def save_weights(self, path):
     self.model.save_weights(path)
   
   def load_model(self, path):

@@ -6,10 +6,10 @@
     "process_data": true,
     "process_phonemes": false,
     "propTRAIN": true,
-    "propLOAD": false,
+    "propLOAD": true,
     "propRMSilencePostLoad": true
   },
-  "model_to_load": "checkpoints/final/mfcc2ppg.ckpt",
+  "model_to_load": "checkpoints/best/mfcc2ppg.ckpt",
   "MFCC_DATA": {
     "sampling_frequency": 16000,
     "order_mfcc": 39,
@@ -17,8 +17,8 @@
     "hop_length": 160
   },
   "NETWORK_PARAM": {
-    "batch_size": 12,
-    "epochs": 10,
+    "batch_size": 20,
+    "epochs": 100,
     "dropout": 0.7,
     "hidden_units": 512,
     "order_mfcc": 39,
@@ -33,9 +33,10 @@
     "validation_stop_value": 0.01,
     "preload_path": "",
     "checkpoint_path": "/tmp/mfcc2ppg_checkpoints/DBLSTM-{epoch:04d}.ckpt",
-    "log_file": "/tmp/mfcc2ppg_training",
+    "log_file": "../log/mfcc2ppg_training",
     "final_checkpoint": "checkpoints/final/mfcc2ppg.ckpt",
-    "best_checkpoint": "checkpoints/best/mfcc2ppg.ckpt"
+    "best_checkpoint": "checkpoints/best/mfcc2ppg.ckpt",
+    "VERBOSE": false
   },
   "PHONEME_WISE": false,
   "PADDING_SIL": 1

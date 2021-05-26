@@ -89,7 +89,7 @@ def prepare_training_data(X_train, y_train, batch_size):
 class DBLSTM:
   def __init__(self, batch_size, n_mffc, hidden_units, 
                out_classes, dropout=0.3, num_epochs=10, log="train.log",
-               LR=0.01, decay_rate=0.97, decay_steps=5, ch_path="", best_path="", last_path=""):
+               LR=0.01, decay_rate=0.97, decay_steps=5, ch_path="", best_path="", last_path="",verbose=True):
     self.initial_learning_rate = LR
     self.decay_rate = decay_rate
     self.decay_steps = decay_steps
@@ -108,7 +108,7 @@ class DBLSTM:
     
     self.loss_fn = CategoricalCrossentropy(from_logits=True)
     self.optimizer = Adam(self.initial_learning_rate)
- 
+    self.verbose = verbose
 
   def save_weights(self, path):
     self.model.save_weights(path)
@@ -150,11 +150,10 @@ class DBLSTM:
       last_loss = None
        
       for i in range(len(X)):
-        
         global_step += 1
         batch += 1
         batch_data, batch_labels = X[i], y[i]
-        
+        # print(batch_data.shape)
         
         with tf.GradientTape() as tape:
           pred = self.model(batch_data, training=True)  # Logits for this minibatch
@@ -168,7 +167,9 @@ class DBLSTM:
           tf.summary.scalar('loss', train_loss.result(), step=global_step-1)
         last_loss = train_loss.result()
         train_loss.reset_states()
-        #print(f"Finished Step {global_step-1} Loss:{last_loss:.4f}")
+        if self.verbose:
+          if global_step % 20 == 0:
+            print(f"Finished Step {global_step-1} Loss:{last_loss:.4f} (Epoch Completed: {i}/{len(X)})")
       eval_loss, gts, preds = self.evaluate_model(X_test, y_test)
       test_loss(eval_loss)
       test_acc(gts, preds)
@@ -176,9 +177,9 @@ class DBLSTM:
       with test_summary_loss_writer.as_default(), test_summary_acc_writer.as_default():
         tf.summary.scalar('loss', test_loss.result(), step=epoch)
         tf.summary.scalar('acc', test_acc.result(), step=epoch)
-        
-      template = 'Epoch {}, Loss: {}, Test Loss: {} Test Acc {:3f}'
-      print(template.format(epoch+1, last_loss, test_loss.result(), test_acc.result()*100))
+      if self.verbose:
+        template = 'Epoch {}, Loss: {}, Test Loss: {} Test Acc {:3f}'
+        print(template.format(epoch+1, last_loss, test_loss.result(), test_acc.result()*100))
       train_loss.reset_states()
       test_loss.reset_states()
 

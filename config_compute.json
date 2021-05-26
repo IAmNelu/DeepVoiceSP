@@ -1,14 +1,12 @@
 {
-  "input_sentence": "",
-
+  "input_sentence": "/home/semesterproject/datasets/TIMIT/TEST/DR1/MDAB0/SX49.WAV",
   "target_scaler": "./utils/scaler.json",
-  
   "PPG2MCEP": {
     "batch_size": 24,
     "hidden_units": 512,
     "dim_ppgs": 40,
     "dim_mceps": 31,
-    "path": "/tmp/ifrim__checkpoints/DBLSTM-0095.ckpt"
+    "path": "../checkpoints/best/ppg2mcep.ckpt"
   },
   "MCEP": {
     "sampling_frequency": 24000,

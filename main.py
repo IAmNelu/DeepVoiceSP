@@ -103,13 +103,13 @@ if __name__ == "__main__":
     sil_num = phonemes_dict_inv['sil']
     train_data = pf.remove_silence(train_data, sil_num, padding_silence)
     test_data = pf.remove_silence(test_data, sil_num,padding_silence)
-  Xp_tr, label_tr = pf.pad_data(train_data, seq_length=config_net["sq"])
-  Xp_ts, label_ts = pf.pad_data(test_data, seq_length=config_net["sq"])
+  # Xp_tr, label_tr = pf.pad_data(train_data, seq_length=config_net["sq"])
+  # Xp_ts, label_ts = pf.pad_data(test_data, seq_length=config_net["sq"])
 
-  train_dataset = DataSet(np.array(Xp_tr, dtype=object), np.array(
-      label_tr, dtype=object), config_net["batch_size"])
-  test_dataset = DataSet(np.array(Xp_ts, dtype=object),
-                          np.array(label_ts, dtype=object), config_net["batch_size"])
+  # train_dataset = DataSet(np.array(Xp_tr, dtype=object), np.array(
+  #     label_tr, dtype=object), config_net["batch_size"])
+  # test_dataset = DataSet(np.array(Xp_ts, dtype=object),
+  #                         np.array(label_ts, dtype=object), config_net["batch_size"])
   print("Model Creation")
   # model = net.DBLSTM(batch_size=config_net["batch_size"], sequence_length=config_net["sq"], n_mffc=config_mfcc["order_mfcc"],
   #               hidden_units=config_net["hidden_units"], out_classes=config_net["num_phoneme_classes"], dropout=config_net["dropout"], 
@@ -124,11 +124,10 @@ if __name__ == "__main__":
   #     model.train_model(train_dataset, test_dataset)
   train_data, train_label = pf.get_data_from_dict(train_data)
   test_data, test_label = pf.get_data_from_dict(test_data)
-  print(config_net)
   model = net.DBLSTM( batch_size=config_net["batch_size"], n_mffc=config_mfcc["order_mfcc"], 
                       hidden_units=config_net["hidden_units"], out_classes=config_net["num_phoneme_classes"], 
                       dropout=config_net["dropout"], num_epochs=config_net["epochs"], 
                       log=config_net["log_file"], LR=config_net["lr"], decay_rate=config_net["lr_decay"], 
                       decay_steps=config_net["decay_steps"], ch_path=config_net["checkpoint_path"],                      
-                      best_path=config_net["best_checkpoint"], last_path=config_net["final_checkpoint"])
+                      best_path=config_net["best_checkpoint"], last_path=config_net["final_checkpoint"], verbose=config_net['VERBOSE'])
   model.train_model( train_data, train_label, test_data, test_label)

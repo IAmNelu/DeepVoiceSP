@@ -18,9 +18,9 @@
     "validation_stop_value": 0.01,
     "preload_path": "",
     "check_points": "/tmp/ifrim_pt2_checkpoints/ppg2mcep-{epoch:04d}.ckpt",
-    "final_checkpoint": "../checkpoints/final/ppg2mcep.ckpt",
-    "best_checkpoint": "../checkpoints/best/ppg2mcep.ckpt",
-    "log_path": "/tmp/2log/"
+    "final_checkpoint": "checkpoints/final/ppg2mcep.ckpt",
+    "best_checkpoint": "checkpoints/best/ppg2mcep.ckpt",
+    "log_path": "../log/ppg2mcep_training"
   },
   "MCEP": {
     "sampling_frequency": 24000,
@@ -35,6 +35,6 @@
     "n_mfcc": 39,
     "hidden_units": 512,
     "dim_ppgs": 40,
-    "path": "/tmp/ifrim__checkpoints/DBLSTM-0095.ckpt"
+    "path": "checkpoints/best/mfcc2ppg.ckpt"
   }
 }

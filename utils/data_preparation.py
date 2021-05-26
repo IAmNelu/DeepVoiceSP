@@ -193,12 +193,23 @@ def load_dict(path):
     return loaded_obj
 
 
+def load_mfcc(path_to_wav_file, config_mfcc_mceps):
+  x, _ = librosa.load(path_to_wav_file, sr=config_mfcc_mceps["sampling_frequency"])
+  mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
+                                n_mfcc=config_mfcc_mceps["order_mfcc"],
+                                n_fft=config_mfcc_mceps["n_fft"],
+                                hop_length=config_mfcc_mceps["hop_length"])
+  mfccs = normalize_mfcc(mfccs.T).T #transpose twice in order to normalize on right axis
+  return mfccs.T
+  
 def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
   _data_x = {}
   path_audios = os.listdir(path_to_data)
-  total_mceps = np.empty((0,config_mfcc_mceps['order_mcep']), float) #used to store mean and std for denormalize results
+  total_mceps = np.empty((0,config_mfcc_mceps['order_mcep']+1), float) #used to store mean and std for denormalize results
   target_scaler = {}
   for p in path_audios:
+    if p.split(".")[-1] != "wav":
+      continue
     x, _ = librosa.load(path_to_data + '/' + p, sr=config_mfcc_mceps["sampling_frequency"])
     frames = librosa.util.frame(x, frame_length=config_mfcc_mceps["n_fft"], hop_length=config_mfcc_mceps["hop_length"]).astype(np.float64).T
     # Windowing
@@ -213,10 +224,11 @@ def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
     mfccs = normalize_mfcc(mfccs.T).T #transpose twice in order to normalize on right axis
     id_ = "_" + p
     _data_x[id_] = (mfccs.T, mceps) #Don't forget mfcc.T -> now both have shape (#frames, #mfcc/mceps)
-  target_scaler["mean"] = np.mean(total_mceps, 0)
-  target_scaler["std"] = np.std(total_mceps, 0)
+  target_scaler["mean"] = list(np.mean(total_mceps, 0))
+  target_scaler["std"] = list(np.std(total_mceps, 0))
   return _data_x, target_scaler
   
+
 
 def get_ppgs_mceps(converto, mfcc_mcep):
   X = []
