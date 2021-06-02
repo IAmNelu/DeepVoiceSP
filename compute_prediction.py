@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
   
   result = transformer.predict(ppg_sentence)
-  scipy.io.savemat("../resconv/result"+".mat",{"mcep": result.numpy()})
+  scipy.io.savemat("../resconv/result2"+".mat",{"mcep": result.numpy()})
     # split train test
     # sort and padd
     # train

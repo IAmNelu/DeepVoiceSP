@@ -1,5 +1,5 @@
 {
-  "input_sentence": "/home/semesterproject/datasets/TIMIT/TEST/DR1/MDAB0/SX49.WAV",
+  "input_sentence": "/homes/ifrim/Documents/datasets/data_challenge/SEM1/E10003.wav",
   "target_scaler": "./utils/scaler.json",
   "PPG2MCEP": {
     "batch_size": 24,
@@ -21,6 +21,6 @@
     "n_mfcc": 39,
     "hidden_units": 512,
     "dim_ppgs": 40,
-    "path": "/tmp/ifrim__checkpoints/DBLSTM-0095.ckpt"
+    "path": "/tmp/ifrim__checkpoints/best/mfcc2ppg.ckpt"
   }
 }

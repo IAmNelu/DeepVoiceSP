@@ -26,15 +26,22 @@ def get_model(hidden_units, batch_size, input_dim, output_dim, dropout) :
   return model
 
 #shuffle batches of data
-def shuffle_batches(X, y):
+def shuffle_batches(X, y, in_batch_shuffle=False):
   indices = np.arange(len(X))
   random.shuffle(indices)
   new_X = [X[i] for i in indices]
   new_y = [y[i] for i in indices]
+  if in_batch_shuffle:
+    for i in range(len(X)):
+      batch_indeces = np.arange(len(new_X[i]))
+      random.shuffle(batch_indeces)
+      new_X[i] = new_X[i][batch_indeces]
+      new_y[i] = new_y[i][batch_indeces]
+  
   return new_X, new_y
 
 
-def padBatch(X, y, batch_size=6):
+def padBatch(X, y, batch_size=6, last_frame=True):
   newX = []
   newY = []
   samples = len(X)
@@ -56,7 +63,14 @@ def padBatch(X, y, batch_size=6):
 
       newX.append(new_x)
       newY.append(new_y)
-
+    if last_frame: # padd with last frame (silence, not with zeros )
+      for i in range(len(newX)):
+        try:
+          last_element = X[i].shape[0] 
+          newX[i][last_element:,:] = newX[i][last_element-1,:]
+          newY[i][last_element:,:] = newY[i][last_element-1,:]
+        except:
+          pass
   return newX, newY
   
 def get_batches(X, y, batch_size=6):
@@ -101,7 +115,8 @@ class DBLSTM:
     self.model = get_model(hidden_units, batch_size, n_mffc, out_classes, dropout)
     
     self.loss_fn = CategoricalCrossentropy(from_logits=True)
-    self.optimizer = Adam(self.initial_learning_rate)
+    # self.optimizer = Adam(self.initial_learning_rate)
+    self.optimizer = RMSprop(learning_rate=self.initial_learning_rate)
     self.verbose = verbose
 
   def save_weights(self, path):
@@ -139,6 +154,7 @@ class DBLSTM:
     
     self.model.summary()
     best_acc = 0
+    print('Start Training')
     for epoch in range(self.epochs):
       X, y = shuffle_batches(X_train_btc, y_train_btc)
       batch = 0
@@ -159,7 +175,7 @@ class DBLSTM:
         self.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
         train_loss(loss_value)
         with train_summary_writer.as_default():
-          tf.summary.scalar('loss', train_loss.result(), step=global_step-1)
+          tf.summary.scalar('Training Loss', train_loss.result(), step=global_step-1)
         last_loss = train_loss.result()
         train_loss.reset_states()
         if self.verbose:
@@ -169,9 +185,10 @@ class DBLSTM:
       test_loss(eval_loss)
       test_acc(gts, preds)
       
-      with test_summary_loss_writer.as_default(), test_summary_acc_writer.as_default():
-        tf.summary.scalar('loss', test_loss.result(), step=epoch)
-        tf.summary.scalar('acc', test_acc.result(), step=epoch)
+      with test_summary_loss_writer.as_default():
+        tf.summary.scalar('Test Loss', test_loss.result(), step=epoch)
+      with test_summary_acc_writer.as_default():
+        tf.summary.scalar('Test Accuracy', test_acc.result(), step=epoch)
       if self.verbose:
         template = 'Epoch {}, Loss: {}, Test Loss: {} Test Acc {:3f}'
         print(template.format(epoch+1, last_loss, test_loss.result(), test_acc.result()*100))
@@ -183,8 +200,12 @@ class DBLSTM:
         self.save_weights(self.paths["best"])
       self.save_weights(self.paths["checkpoints"].format(epoch=epoch, accuracy=test_acc.result()*100))
       test_acc.reset_states()
+      new_lr = self.decayed_learning_rate(epoch)
+      self.optimizer.lr = new_lr
+      with lr_summary_writer.as_default():
+        tf.summary.scalar('Learning Rate', self.optimizer.lr, step=epoch)
     self.save_weights(self.paths["last"])
-
+    
 
     # with open(self.paths[] + '.npy', 'wb') as f:
     #   np.save(f, self.losses)
@@ -217,7 +238,12 @@ class DBLSTM:
     # acc = (gts == preds).numpy().sum() / gts.shape[0]
     return np.mean(losses), gts, preds
     
-  
+  def decayed_learning_rate(self, step, offset=50):
+    if step > offset:
+      step = step - offset
+      return self.initial_learning_rate * self.decay_rate**(step / self.decay_steps)
+    else: 
+      return self.initial_learning_rate
   
   def predict(self, mfcc):
     ppg = self.model(np.vstack([mfcc.T[np.newaxis,:]]*self.batch_size))[0]
