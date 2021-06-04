@@ -17,9 +17,9 @@
     "hop_length": 160
   },
   "NETWORK_PARAM": {
-    "batch_size": 20,
+    "batch_size": 6,
     "epochs": 100,
-    "dropout": 0.7,
+    "dropout": 0.6,
     "hidden_units": 512,
     "order_mfcc": 39,
     "lr": 0.00002,

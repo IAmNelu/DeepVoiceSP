@@ -115,8 +115,8 @@ class DBLSTM:
     self.model = get_model(hidden_units, batch_size, n_mffc, out_classes, dropout)
     
     self.loss_fn = CategoricalCrossentropy(from_logits=True)
-    # self.optimizer = Adam(self.initial_learning_rate)
-    self.optimizer = RMSprop(learning_rate=self.initial_learning_rate)
+    self.optimizer = Adam(self.initial_learning_rate)
+    #self.optimizer = RMSprop(learning_rate=self.initial_learning_rate)
     self.verbose = verbose
 
   def save_weights(self, path):

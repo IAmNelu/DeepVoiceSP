@@ -62,7 +62,7 @@ if __name__ == "__main__":
   converter.load_weights(config_mfcc2ppg['path'])
   
   # transform mfcc to ppgs with model
-  print('Dio')
+  # print('Dio')
   ppg_sentence = converter.predict(mfcc)
 
   target_scaler = dp.load_json_dict(target_scaler)
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
   
   result = transformer.predict(ppg_sentence)
-  scipy.io.savemat("../resconv/result2"+".mat",{"mcep": result.numpy()})
+  scipy.io.savemat("../resconv/result_marco"+".mat",{"mcep": result.numpy()})
     # split train test
     # sort and padd
     # train
