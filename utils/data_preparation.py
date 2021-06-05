@@ -6,6 +6,7 @@ import pysptk
 import numpy as np
 import pandas as pd
 import pickle
+import math
 
 #save all paths to the data
 def paths_from_region(path_to_data):
@@ -282,8 +283,60 @@ def load_mfcc_mceps(path_to_data, config_mfcc_mceps):
   target_scaler["std"] = list(np.std(total_mceps, 0))
   return _data_x, target_scaler
   
-
-
+def load_mfcc_mceps_VCTK(list_train_data, data_folder, speaker, config_mfcc_mceps):
+  root = data_folder
+  _data_x = {}
+  target_scaler = {}
+  with open(list_train_data, 'r') as ft:
+    lines = ft.readlines()
+    total_mceps = np.empty((0,config_mfcc_mceps['order_mcep']+1), float) #used to store mean and std for denormalize results
+    for l in lines:
+      l = l.strip()
+      speaker_f, _ = l.split('_')
+      if speaker_f != speaker:
+        continue
+      
+      wav_path = root + speaker + '/' + l + '.wav'
+      x, _ = librosa.load(wav_path, sr=config_mfcc_mceps["sampling_frequency"])
+      mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
+                                  n_mfcc=config_mfcc_mceps["order_mfcc"],
+                                  n_fft=config_mfcc_mceps["n_fft"],
+                                  hop_length=config_mfcc_mceps["hop_length"])
+      mfccs = normalize_mfcc(mfccs.T).T #transpose twice in order to normalize on right axis
+      
+      ## zeros marco aggiungi commenti decenti
+      mfcc_l = math.ceil(x.shape[0]/config_mfcc_mceps["hop_length"])
+      mcep_l=math.ceil((x.shape[0]-config_mfcc_mceps["n_fft"])/config_mfcc_mceps["hop_length"] )
+      final_shape = x.shape[0] + config_mfcc_mceps["hop_length"]*(mfcc_l-mcep_l)
+      x.resize((final_shape,))
+      
+      
+      frames = librosa.util.frame(x, frame_length=config_mfcc_mceps["n_fft"], hop_length=config_mfcc_mceps["hop_length"]).astype(np.float64).T
+      mceps = pysptk.mcep(frames, config_mfcc_mceps['order_mcep'])
+      total_mceps = np.vstack((total_mceps,mceps)) 
+      
+      id_ = "_" + l
+      _data_x[id_] = (mfccs.T, mceps) #Don't forget mfcc.T -> now both have shape (#frames, #mfcc/mceps)
+    
+    # compute mean and std for all mceps
+    target_scaler["mean"] = np.mean(total_mceps, 0)
+    target_scaler["std"] = np.std(total_mceps, 0) 
+  #apply normalization 
+  for k, v in _data_x.items():
+    mcep = v[1]
+    mcep =  (mcep - target_scaler["mean"])/target_scaler["std"]
+    _data_x[k] = (v[0], mcep)
+  
+  #convert to list to save to file
+  target_scaler["mean"] = list(target_scaler["mean"])
+  target_scaler["std"] = list(target_scaler["std"])
+  
+  print(f"Total Seconds of audio: {total_mceps.shape[0]/100}")
+  
+  return _data_x, target_scaler
+    
+    
+     
 def get_ppgs_mceps(converto, mfcc_mcep):
   '''
   Use pretrained phase 1 to get ppgs from mfcc
@@ -299,6 +352,7 @@ def get_ppgs_mceps(converto, mfcc_mcep):
   for mfcc, mcep in mfcc_mcep.values():
     ppgs = converto.predict(mfcc)
     dif = ppgs.shape[0] - mcep.shape[0] # frame mismatch in some case -> mcep cut some starting silence frame
+    assert dif == 0
     X.append(ppgs[dif:])
     y.append(mcep)
   return X, y

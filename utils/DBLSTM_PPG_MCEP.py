@@ -75,7 +75,9 @@ def prepare_training_data(X_train, y_train, batch_size):
 class DBLSTM:
   def __init__( self, dim_ppgs, dim_mceps, hidden_units, batch_size=6, lr=0.001, epochs=1, 
                 dropout=0.3, decay_rate=1, decay_steps=5,
-                checkpoint_path="", best_checkpoint_path="", last_checkpoint_path="", log_path="", scaler=None):
+                checkpoint_path="", best_checkpoint_path="", 
+                last_checkpoint_path="", log_path="", scaler=None,
+                verbose=False, speaker="_"):
     self.batch_size = batch_size
     self.initial_lr = lr
     self.epochs = epochs
@@ -94,7 +96,8 @@ class DBLSTM:
     self.optimizer = Adam(lr=self.initial_lr)
     self.loss_fn = MSE
     self.model = get_model(hidden_units, batch_size, dim_ppgs, dim_mceps, dropout)
-
+    self.verbose = verbose
+    self.speaker = speaker
 
   def train_model(self, data, labels):
     #split data
@@ -108,10 +111,13 @@ class DBLSTM:
     test_loss = tf.keras.metrics.Mean('test_loss', dtype=tf.float32)
 
     current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    train_log_dir = self.paths["log"] + '/ppg2mcep/' + current_time + '/train'
-    test_log_dir = self.paths["log"] + '/ppg2mcep/' + current_time +  '/test'
+    root = self.paths["log"] + '/ppg2mcep/' + f"LR-{self.initial_lr}-" + current_time
+    train_log_dir = root + '/train'
+    test_log_dir = root +  '/test'
+    lr_log_dir =  root +  '/LR'
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+    lr_summary_writer = tf.summary.create_file_writer(lr_log_dir)
         
     for epoch in range(self.epochs):
       best_loss = 100000
@@ -130,22 +136,27 @@ class DBLSTM:
         self.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
         train_loss(loss_value)
         with train_summary_writer.as_default():
-          tf.summary.scalar('loss', train_loss.result(), step=global_step-1)
+          tf.summary.scalar('Train Loss', train_loss.result(), step=global_step-1)
         last_loss = train_loss.result()
         train_loss.reset_states()
       eval_loss = self.evaluate_model(X_test, y_test)
       test_loss(eval_loss)
       
       with test_summary_writer.as_default():
-        tf.summary.scalar('loss', test_loss.result(), step=epoch)
-      template = 'Epoch {}, Loss: {}, Test Loss: {}'
-      print(template.format(epoch+1, last_loss, test_loss.result()))
+        tf.summary.scalar('Test Loss', test_loss.result(), step=epoch)
+      if self.verbose:
+        template = 'Epoch {}, Loss: {}, Test Loss: {}'
+        print(template.format(epoch+1, last_loss, test_loss.result()))
       train_loss.reset_states()   
       if (test_loss.result() < best_loss):
         best_loss = test_loss.result()
-        self.save_weights(self.paths["best"])
+        self.save_weights(self.paths["best"].format(speaker=self.speaker))
       test_loss.reset_states()
-      self.save_weights(self.paths["checkpoints"])
+      self.save_weights(self.paths["checkpoints"].format(epoch=epoch+1))
+      new_lr = self.decayed_learning_rate(epoch)
+      self.optimizer.lr = new_lr
+      with lr_summary_writer.as_default():
+        tf.summary.scalar('Learning Rate', self.optimizer.lr, step=epoch)
     self.save_weights(self.paths["last"])
       
   def evaluate_model(self, X_test, y_test):
@@ -176,3 +187,9 @@ class DBLSTM:
     mceps_sc = mceps*self.scaler["std"] + self.scaler["mean"]
     return mceps_sc
   
+  def decayed_learning_rate(self, step, offset=50):
+    if step > offset:
+      step = step - offset
+      return self.initial_lr * self.decay_rate**(step / self.decay_steps)
+    else: 
+      return self.initial_lr

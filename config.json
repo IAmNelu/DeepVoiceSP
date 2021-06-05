@@ -22,7 +22,7 @@
     "dropout": 0.6,
     "hidden_units": 512,
     "order_mfcc": 39,
-    "lr": 0.00002,
+    "lr": 0.000025,
     "sq": 20,
     "lr_decay": 0.93,
     "decay_steps": 10,

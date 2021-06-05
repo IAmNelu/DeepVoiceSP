@@ -246,5 +246,5 @@ class DBLSTM:
       return self.initial_learning_rate
   
   def predict(self, mfcc):
-    ppg = self.model(np.vstack([mfcc.T[np.newaxis,:]]*self.batch_size))[0]
+    ppg = self.model(mfcc[np.newaxis,:])[0,:]
     return ppg
