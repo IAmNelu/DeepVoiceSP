@@ -248,3 +248,25 @@ class DBLSTM:
   def predict(self, mfcc):
     ppg = self.model(mfcc[np.newaxis,:])[0,:]
     return ppg
+
+#TO BE TESTED
+  def evaluate_best_K(self, X_test, y_test, k=1):
+    X_test_pad, y_test_pad = padBatch(X_test, y_test, batch_size=1)
+    X_p, y_p =  get_batches(X_test_pad, y_test_pad, batch_size=1)
+    found = 0
+    total = 0
+
+    for data, label in zip(X_p, y_p):
+      if data.shape[1] == 0:
+        continue
+      pred = self.model(data, training=False)
+      _, indices  = tf.math.top_k(pred, k=k)
+      flatten_lab = tf.reshape(tf.math.argmax(label, axis=2),-1)
+      j = 0
+      for l in flatten_lab:
+        if l in tf.cast(indices[0,j,:], np.float32):
+          print("found")
+          found +=1
+        total +=1
+        j+=1
+    return found/total
