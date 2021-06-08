@@ -30,8 +30,6 @@ def set_global_variables(file_name):
     global config_mfcc2ppg
     config_mfcc2ppg = _dict['MFCC2PPG']
     # print(config_net['dim_ppgs'])
-    global scaler_path 
-    scaler_path = _dict["SCALER_PATH"]
     global PATH_TO_DATA
     #PATH_TO_DATA = _dict["PATH_TO_DATA_F"] # f speaker
     # PATH_TO_DATA = _dict["PATH_TO_DATA_M"] # m speaker
@@ -40,6 +38,8 @@ def set_global_variables(file_name):
     PATH_TO_LIST = _dict["PATH_TO_LIST"]
     global SPEAKER
     SPEAKER = _dict['SPEAKER']
+    global scaler_path 
+    scaler_path = _dict["SCALER_PATH"] + SPEAKER + "scaler.json"
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Process some integers.')

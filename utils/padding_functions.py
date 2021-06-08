@@ -1,6 +1,20 @@
 import numpy as np
 
 def remove_silence(X, cl=None, padd=1):
+  '''
+  Remove starting and ending silence, to balance classes, leaving #padd silence
+  Input:
+    X: dictionary of extracted mfccs, labels
+    cl: index of silence class 
+    padd: number of silence frames to leave
+  Output:
+    snello: dictionary of dictionaries:
+      key: X key
+      values: dictionary with:
+        mfcc -> new mfcc without silence
+        y -> new labels without silence
+        path -> same path
+  '''
   snello = {}
   for key, v in X.items():
     x = v['mfcc']
