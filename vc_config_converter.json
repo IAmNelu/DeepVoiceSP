@@ -1,0 +1,29 @@
+{
+  "input_sentence": "../file_cm_eval_vc.list",
+  "target_scaler": "../scaler/",
+  "SPEAKER": "p282",
+  "PATH_TO_DATA": "/home/semesterproject/datasets/VCTK_96kHz/wav/",
+  "RESULT_FOLDER": "/home/vinai/ConvertedWAV/",
+  "PPG2MCEP": {
+    "batch_size": 24,
+    "hidden_units": 512,
+    "dim_ppgs": 40,
+    "dim_mceps": 31,
+    "path": "/tmp/pt2/"
+  },
+  "MCEP": {
+    "sampling_frequency": 16000,
+    "hop_length": 160,
+    "n_fft": 512,
+    "order_mcep": 30,
+    "order_mfcc": 39
+  },
+  "MFCC2PPG": {
+    "batch_size": 24,
+    "sequence_length": 20,
+    "n_mfcc": 39,
+    "hidden_units": 512,
+    "dim_ppgs": 40,
+    "path": "../checkpoints/best/mfcc2ppg.ckpt"
+  }
+}
