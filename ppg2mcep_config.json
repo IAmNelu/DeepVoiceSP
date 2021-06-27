@@ -3,16 +3,19 @@
   "PATH_TO_DATA_M": "/homes/ifrim/Documents/datasets/data_challenge/SEM1",
   "PATH_TO_DATA": "/home/semesterproject/datasets/VCTK_96kHz/wav/",
   "PATH_TO_LIST": "/homes/ifrim/Documents/codes/DeepVoiceSP/config_files/list-eval-spoofing-VC-target-speakers-data.list",
-  "SPEAKER": "p284",
-  "SCALER_PATH": "./scaler/",
+  "SPEAKERS": [
+    "p227",
+    "282"
+  ],
+  "SCALER_PATH": "../scaler/",
   "NETWORK_PARAMS": {
     "batch_size": 6,
     "epochs": 100,
-    "dropout": 0.5,
+    "dropout": 0.4,
     "hidden_units": 512,
     "dim_ppgs": 40,
     "dim_mceps": 31,
-    "lr": 0.00005,
+    "lr": 0.00003,
     "lr_decay": 0.99,
     "decay_steps": 5,
     "optim": "adam",
@@ -22,7 +25,7 @@
     "preload_path": "",
     "check_points": "/tmp/ifrim_pt2_checkpoints/ppg2mcep-{epoch:04d}.ckpt",
     "final_checkpoint": "checkpoints/final/ppg2mcep.ckpt",
-    "best_checkpoint": "checkpoints/best/{speaker}_ppg2mcep.ckpt",
+    "best_checkpoint": "/tmp/pt2/{speaker}_ppg2mcep.ckpt",
     "log_path": "../log/ppg2mcep_training",
     "VERBOSE": false
   },

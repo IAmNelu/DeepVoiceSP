@@ -313,6 +313,7 @@ def load_mfcc_mceps_VCTK(list_train_data, data_folder, speaker, config_mfcc_mcep
   _data_x = {}
   target_scaler = {}
   with open(list_train_data, 'r') as ft:
+    count_errors = 0
     lines = ft.readlines()
     total_mceps = np.empty((0,config_mfcc_mceps['order_mcep']+1), float) #used to store mean and std for denormalize results
     for l in lines:
@@ -320,29 +321,35 @@ def load_mfcc_mceps_VCTK(list_train_data, data_folder, speaker, config_mfcc_mcep
       speaker_f, _ = l.split('_')
       if speaker_f != speaker:
         continue
-      
       wav_path = root + speaker + '/' + l + '.wav'
-      x, _ = librosa.load(wav_path, sr=config_mfcc_mceps["sampling_frequency"])
-      mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
-                                  n_mfcc=config_mfcc_mceps["order_mfcc"],
-                                  n_fft=config_mfcc_mceps["n_fft"],
-                                  hop_length=config_mfcc_mceps["hop_length"])
-      mfccs = normalize_mfcc(mfccs.T).T #transpose twice in order to normalize on right axis
-      
-      ## pad the extracted x in order to frame it to have same number of mceps and mfccs
-      mfcc_l = math.ceil(x.shape[0]/config_mfcc_mceps["hop_length"]) #number of 10ms frames expected
-      mcep_l=math.ceil((x.shape[0]-config_mfcc_mceps["n_fft"])/config_mfcc_mceps["hop_length"] ) #number of 10ms frames without 0 padding
-      final_shape = x.shape[0] + config_mfcc_mceps["hop_length"]*(mfcc_l-mcep_l) #compute new shape in order to get same number of mceps and mfcc frames
-      x.resize((final_shape,))
-      
-      
-      frames = librosa.util.frame(x, frame_length=config_mfcc_mceps["n_fft"], hop_length=config_mfcc_mceps["hop_length"]).astype(np.float64).T
-      mceps = pysptk.mcep(frames, config_mfcc_mceps['order_mcep'])
-      total_mceps = np.vstack((total_mceps,mceps)) 
-      
-      id_ = "_" + l
-      _data_x[id_] = (mfccs.T, mceps) #Don't forget mfcc.T -> now both have shape (#frames, #mfcc/mceps)
+      try:
+        x, _ = librosa.load(wav_path, sr=config_mfcc_mceps["sampling_frequency"])
+        mfccs = librosa.feature.mfcc(y=x, sr=config_mfcc_mceps["sampling_frequency"],
+                                    n_mfcc=config_mfcc_mceps["order_mfcc"],
+                                    n_fft=config_mfcc_mceps["n_fft"],
+                                    hop_length=config_mfcc_mceps["hop_length"])
+        mfccs = normalize_mfcc(mfccs.T).T #transpose twice in order to normalize on right axis
+        
+        ## pad the extracted x in order to frame it to have same number of mceps and mfccs
+        mfcc_l = math.ceil(x.shape[0]/config_mfcc_mceps["hop_length"]) #number of 10ms frames expected
+        mcep_l=math.ceil((x.shape[0]-config_mfcc_mceps["n_fft"])/config_mfcc_mceps["hop_length"] ) #number of 10ms frames without 0 padding
+        final_shape = x.shape[0] + config_mfcc_mceps["hop_length"]*(mfcc_l-mcep_l) #compute new shape in order to get same number of mceps and mfcc frames
+        x.resize((final_shape,))
+        
+        
+        frames = librosa.util.frame(x, frame_length=config_mfcc_mceps["n_fft"], hop_length=config_mfcc_mceps["hop_length"]).astype(np.float64).T
+        # mceps = pysptk.mcep(frames, config_mfcc_mceps['order_mcep'], etype=1, eps=1e-5)
+        mceps = pysptk.mcep(frames, config_mfcc_mceps['order_mcep'])
+        
+        total_mceps = np.vstack((total_mceps,mceps)) 
+        
+        id_ = "_" + l
+        _data_x[id_] = (mfccs.T, mceps) #Don't forget mfcc.T -> now both have shape (#frames, #mfcc/mceps)
+      except:
+        #print(f"Error file: {wav_path}")
+        count_errors+=1
     
+    #print(f"\nTotal errors: {count_errors}\n")
   # compute mean and std for all mceps
   target_scaler["mean"] = np.mean(total_mceps, 0)
   target_scaler["std"] = np.std(total_mceps, 0) 
@@ -356,7 +363,7 @@ def load_mfcc_mceps_VCTK(list_train_data, data_folder, speaker, config_mfcc_mcep
   target_scaler["mean"] = list(target_scaler["mean"])
   target_scaler["std"] = list(target_scaler["std"])
   
-  print(f"Total Seconds of audio: {total_mceps.shape[0]/100}")
+  #print(f"Total Seconds of audio: {total_mceps.shape[0]/100}")
   
   return _data_x, target_scaler
     
@@ -377,7 +384,7 @@ def get_ppgs_mceps(converto, mfcc_mcep):
   for mfcc, mcep in mfcc_mcep.values():
     ppgs = converto.predict(mfcc)
     dif = ppgs.shape[0] - mcep.shape[0] # frame mismatch in some case -> mcep cut some starting silence frame
-    assert dif == 0
+    #if dif != 0: print(dif)
     X.append(ppgs[dif:])
     y.append(mcep)
   return X, y

@@ -111,7 +111,7 @@ class DBLSTM:
     test_loss = tf.keras.metrics.Mean('test_loss', dtype=tf.float32)
 
     current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    root = self.paths["log"] + '/ppg2mcep/' + f"LR-{self.initial_lr}-" + current_time
+    root = self.paths["log"] + f'/ppg2mcep/{self.speaker}_' + f"LR-{self.initial_lr}-" + current_time
     train_log_dir = root + '/train'
     test_log_dir = root +  '/test'
     lr_log_dir =  root +  '/LR'
@@ -152,12 +152,13 @@ class DBLSTM:
         best_loss = test_loss.result()
         self.save_weights(self.paths["best"].format(speaker=self.speaker))
       test_loss.reset_states()
-      self.save_weights(self.paths["checkpoints"].format(epoch=epoch+1))
+      #self.save_weights(self.paths["checkpoints"].format(epoch=epoch+1))  #uncoment for checkpoints
       new_lr = self.decayed_learning_rate(epoch)
       self.optimizer.lr = new_lr
       with lr_summary_writer.as_default():
         tf.summary.scalar('Learning Rate', self.optimizer.lr, step=epoch)
-    self.save_weights(self.paths["last"])
+    #self.save_weights(self.paths["last"])
+    #print(best_loss)
       
   def evaluate_model(self, X_test, y_test):
     losses = []
