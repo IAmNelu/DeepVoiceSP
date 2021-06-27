@@ -29,8 +29,6 @@ def set_global_variables(file_name):
   config_run = _dict["CONFIG_RUN"]
   global config_mfcc
   config_mfcc = _dict["MFCC_DATA"]
-  global PHONEME_WISE
-  PHONEME_WISE = _dict["PHONEME_WISE"]
   global CHECKPOINT_PATH
   CHECKPOINT_PATH =  config_net["checkpoint_path"]
   global padding_silence
@@ -86,10 +84,10 @@ if __name__ == "__main__":
 
     #pair mfcc frame to label
     train_data = dp.pair_data(
-        train_dict_x, phonemes_dict_inv, PHONEME_WISE)
+        train_dict_x, phonemes_dict_inv)
     dp.save_dict(train_data, 'train_data.pickle')
 
-    test_data = dp.pair_data(test_dict_x, phonemes_dict_inv, PHONEME_WISE)
+    test_data = dp.pair_data(test_dict_x, phonemes_dict_inv)
     dp.save_dict(test_data, 'test_data.pickle')
 
   else:  # no process, just load pickles

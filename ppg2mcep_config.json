@@ -1,6 +1,4 @@
 {
-  "PATH_TO_DATA_F": "/homes/ifrim/Documents/datasets/data_challenge/SEF1",
-  "PATH_TO_DATA_M": "/homes/ifrim/Documents/datasets/data_challenge/SEM1",
   "PATH_TO_DATA": "/home/semesterproject/datasets/VCTK_96kHz/wav/",
   "PATH_TO_LIST": "/homes/ifrim/Documents/codes/DeepVoiceSP/config_files/list-eval-spoofing-VC-target-speakers-data.list",
   "SPEAKERS": [
@@ -19,10 +17,8 @@
     "lr_decay": 0.99,
     "decay_steps": 5,
     "optim": "adam",
-    "preload": false,
     "validation_stop": true,
     "validation_stop_value": 0.01,
-    "preload_path": "",
     "check_points": "/tmp/ifrim_pt2_checkpoints/ppg2mcep-{epoch:04d}.ckpt",
     "final_checkpoint": "checkpoints/final/ppg2mcep.ckpt",
     "best_checkpoint": "/tmp/pt2/{speaker}_ppg2mcep.ckpt",
