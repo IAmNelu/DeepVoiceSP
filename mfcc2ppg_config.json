@@ -38,6 +38,5 @@
     "best_checkpoint": "checkpoints/best/mfcc2ppg.ckpt",
     "VERBOSE": false
   },
-  "PHONEME_WISE": false,
   "PADDING_SIL": 1
 }

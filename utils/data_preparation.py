@@ -128,7 +128,7 @@ def compute_mfcc(paths, config_mfcc):
   return _data_x
 
 
-def read_phn(f, temp_mfcc, phonem_dict, phoneme_wise=False):
+def read_phn(f, temp_mfcc, phonem_dict): #CHECK RATIO DONE IF WANT FRAME WITH DIFFERENT LENGTH TO 10MS
   '''perform match between mfcc extracted and corresponding phoneme
   input:
     f: phoneme transcription file path
@@ -142,48 +142,37 @@ def read_phn(f, temp_mfcc, phonem_dict, phoneme_wise=False):
   # Read PHN files
   temp_phones = pd.read_csv(f, delimiter=" ", header=None,  names=[
                             'start', 'end', 'phone'])
-  if phoneme_wise:
-    phones_list = []
-    mfcc_block_list = []
+
 
   # Get the length of the phone data
   _, phn_len, _ = temp_phones.iloc[-1]
-  phn_len_mill = int(phn_len/160)  # 160 since each frame is 10ms
-  if not phoneme_wise:
-    if phn_len_mill < temp_mfcc.shape[1]:
-      # An array of class labels for every 10 ms in the phone data
-      # phones[2] is the phoneme annotated from 20-30 ms
-      phones = np.zeros((len(set(phonem_dict.values())), phn_len_mill), dtype=int)
-      # Make sure the length of mfcc_data and phn_len_mill are equal
-      mfcc_data = temp_mfcc[:, 0:phn_len_mill]
-    else:
-      phones = np.zeros((set(len(phonem_dict.values())), temp_mfcc.shape[1]))
-      mfcc_data = temp_mfcc
+  phn_len_mill = int(phn_len/160)  # 160 since each frame is 10ms, CHECK IF DIFFERENT SETTINGS
+  if phn_len_mill < temp_mfcc.shape[1]:
+    # An array of class labels for every 10 ms in the phone data
+    # phones[2] is the phoneme annotated from 20-30 ms
+    phones = np.zeros((len(set(phonem_dict.values())), phn_len_mill), dtype=int)
+    # Make sure the length of mfcc_data and phn_len_mill are equal
+    mfcc_data = temp_mfcc[:, 0:phn_len_mill]
+  else:
+    phones = np.zeros((set(len(phonem_dict.values())), temp_mfcc.shape[1]))
+    mfcc_data = temp_mfcc
 
   d = phn_len_mill - temp_mfcc.shape[1]
 
 # Convert the string phonemes to class labels
   for i, (s, e, phone) in enumerate(temp_phones.iloc):
-    start = int(s/160.0)
-    end = int(e/160.0)
-    if phoneme_wise:
-      one_hot = np.zeros(len(set(phonem_dict.values())))
-      one_hot[phonem_dict[phone]] = 1
-      phones_list.append(one_hot)
-      mfcc_block_list.append(temp_mfcc[:, start: min(end, temp_mfcc.shape[1])])
-    else:
+    start = int(s/160.0)  # 160 since each frame is 10ms, CHECK IF DIFFERENT SETTINGS
+    end = int(e/160.0)  # 160 since each frame is 10ms, CHECK IF DIFFERENT SETTINGS
+    
       # print(f"{start} s, {end} e, {len}")
-      phones[phonem_dict[phone], start:min(end, phones.shape[1])] = 1
+    phones[phonem_dict[phone], start:min(end, phones.shape[1])] = 1
   # print(f"{phone} found at index {ALL_PHONEMES.index(phone)}, y becomes {phones[:,start:min(end,phones.shape[1])]}")
-
-  if phoneme_wise:
-    return np.array(phones_list), mfcc_block_list, d
 
   return phones.astype(int), mfcc_data, d
 
 
 # receives an entry of the dictionary with key user_sentenceID -> (mfcc, path)
-def match_data(sentence_entry, phonem_dict, verbose=False, phoneme_wise=False):
+def match_data(sentence_entry, phonem_dict, verbose=False):
   """Match label to mfcc
     Args:
       sentence_entry (Tuple):
@@ -196,7 +185,7 @@ def match_data(sentence_entry, phonem_dict, verbose=False, phoneme_wise=False):
 
   mfcc_data = sentence_entry[0]
 
-  phones, mfcc_data, d = read_phn(phoneme_file, mfcc_data, phonem_dict, phoneme_wise=phoneme_wise)
+  phones, mfcc_data, d = read_phn(phoneme_file, mfcc_data, phonem_dict)
   if verbose:
     if d != 0:
       if abs(d) > 500:
@@ -204,7 +193,7 @@ def match_data(sentence_entry, phonem_dict, verbose=False, phoneme_wise=False):
   return mfcc_data, phones
 
 
-def pair_data(x_dictionay, phonem_dict, phoneme_wise=False):
+def pair_data(x_dictionay, phonem_dict):
   '''
     Pair data available in dictionary of (mfcc,paths)
     returns:
@@ -217,7 +206,7 @@ def pair_data(x_dictionay, phonem_dict, phoneme_wise=False):
   '''
   result_dict = {}
   for k, v in x_dictionay.items():
-    mfcc, y = match_data(v, phonem_dict, verbose=True, phoneme_wise=phoneme_wise)
+    mfcc, y = match_data(v, phonem_dict, verbose=True)
     # result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1], "mceps":v[1]}
     result_dict[k] = {"mfcc": mfcc.T, "y": y.T, "path": v[-1]}
 
@@ -363,7 +352,7 @@ def load_mfcc_mceps_VCTK(list_train_data, data_folder, speaker, config_mfcc_mcep
   target_scaler["mean"] = list(target_scaler["mean"])
   target_scaler["std"] = list(target_scaler["std"])
   
-  #print(f"Total Seconds of audio: {total_mceps.shape[0]/100}")
+  print(f"Total Seconds of audio: {total_mceps.shape[0]/100}")
   
   return _data_x, target_scaler
     
